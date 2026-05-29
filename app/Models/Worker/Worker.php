@@ -4,9 +4,11 @@ namespace App\Models\Worker;
 
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\HasApiTokens;
 
 class Worker extends Authenticatable
 {
+    use HasApiTokens;
     protected $table = 'workers';
 
     protected $fillable = [

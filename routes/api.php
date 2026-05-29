@@ -14,6 +14,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// ── Auth ────────────────────────────────────────────────────────────────────
+Route::post('/login', [App\Http\Controllers\Api\AuthController::class, 'login']);
+Route::middleware('auth:api')->post('/logout', [App\Http\Controllers\Api\AuthController::class, 'logout']);
+
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });

@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 
 class BookingController extends Controller
 {
-    public function __construct(protected BookingService $bookingService)
-    {
-    }
+  protected $bookingService;
+
+public function __construct(BookingService $bookingService)
+{
+    $this->bookingService = $bookingService;
+}
 
     /**
      * Verify booking token for stateless access
@@ -39,27 +42,32 @@ class BookingController extends Controller
         $bid   = $booking->id;
         $creds = session('booking_creds_' . $bid);
 
-        $clientLogin    = $creds['login']    ?? ($booking->client?->email ?: $booking->client?->phone);
+        $clientLogin = $creds['login'] ?? ($booking->client ? ($booking->client->email ?: $booking->client->phone) : null);
         $clientPassword = $creds['password'] ?? null;
 
         $packagePrice = $meta['packagePrice'] ?? null;
-        $totalPrice   = $booking->total_price ? (float) $booking->total_price : null;
+$totalPrice   = $booking->total_price ? (float) $booking->total_price : null;
 
-        $extraPrice = null;
-        if ($totalPrice && $packagePrice && $totalPrice > (float) $packagePrice) {
-            $extraPrice = $totalPrice - (float) $packagePrice;
-        }
+$extraPrice = null;
+if ($totalPrice && $packagePrice && $totalPrice > (float) $packagePrice) {
+    $extraPrice = $totalPrice - (float) $packagePrice;
+}
 
-        return view('front.booking.confirmation', [
-            'booking'         => $booking,
-            'packageName'     => $meta['packageName'],
-            'packagePrice'    => $packagePrice,
-            'totalPrice'      => $totalPrice,
-            'extraPrice'      => $extraPrice,
-            'locationName'    => $meta['locationName'],
-            'clientLogin'     => $clientLogin,
-            'clientPassword'  => $clientPassword,
-        ]);
+// ── جديد: الخصم الترويجي ──
+$discountAmount = $booking->discount_amount ? (float) $booking->discount_amount : null;
+$promoCode = $booking->promoCode ? $booking->promoCode->code : null;
+return view('front.booking.confirmation', [
+    'booking'         => $booking,
+    'packageName'     => $meta['packageName'],
+    'packagePrice'    => $packagePrice,
+    'totalPrice'      => $totalPrice,
+    'extraPrice'      => $extraPrice,
+    'locationName'    => $meta['locationName'],
+    'clientLogin'     => $clientLogin,
+    'clientPassword'  => $clientPassword,
+    'discountAmount'  => $discountAmount,  // ← جديد
+    'promoCode'       => $promoCode,       // ← جديد
+]);
     }
 
     /**

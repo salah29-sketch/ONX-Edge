@@ -12,6 +12,7 @@ use App\Models\Booking\EventBooking;
 use App\Models\Booking\SubscriptionBooking;
 use App\Models\Client\Client;
 use App\Models\Subscription\Subscription;
+use App\Services\PromoCodeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -20,10 +21,12 @@ use Illuminate\Support\Facades\Mail;
 
 class BookingService
 {
-    public function __construct(
-        protected PromoCodeService $promoCodeService
-    ) {
-    }
+protected $promoCodeService;
+
+public function __construct(PromoCodeService $promoCodeService)
+{
+    $this->promoCodeService = $promoCodeService;
+}
 
     public function checkPromoCode(string $code, float $total): array
     {
@@ -177,20 +180,21 @@ class BookingService
             $client   = $this->findOrCreateClient($data);
             $password = $this->ensureClientPassword($client);
 
-            $booking = Booking::create([
-                'client_id'       => $client->id,
-                'service_id'      => $data['service_id'],
-                'name'            => $data['name'],
-                'phone'           => $data['phone'],
-                'email'           => $data['email'] ?? null,
-                'event_date'      => $data['event_date'],
-                'booking_type'    => BookingType::EVENT->value,
-                'status'          => BookingStatus::PENDING->value,
-                'total_price'     => $pricing->total,
-                'final_price'     => $pricing->total,
-                'discount_amount' => 0,
-                'notes'           => $data['notes'] ?? null,
-            ]);
+$booking = Booking::create([
+    'client_id'       => $client->id,
+    'service_id'      => $data['service_id'],
+    'package_id'      => $data['package_id'] ?? null,  // ← هذا السطر ناقص
+    'name'            => $data['name'],
+    'phone'           => $data['phone'],
+    'email'           => $data['email'] ?? null,
+    'event_date'      => $data['event_date'],
+    'booking_type'    => BookingType::EVENT->value,
+    'status'          => BookingStatus::PENDING->value,
+    'total_price'     => $pricing->total,
+    'final_price'     => $pricing->total,
+    'discount_amount' => 0,
+    'notes'           => $data['notes'] ?? null,
+]);
 
             EventBooking::create([
                 'booking_id'   => $booking->id,
