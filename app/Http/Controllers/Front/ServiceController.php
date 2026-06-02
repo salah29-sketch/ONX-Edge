@@ -218,7 +218,7 @@ class ServiceController extends Controller
             return compact('categoriesPayload', 'heroStrip', 'testimonials', 'stats', 'waNumber', 'phoneRaw');
         });
 
-        return view('front.services.index', [
+        return view('front.services.unified', [
             'categoriesPayload' => $cached['categoriesPayload'],
             'heroStrip'         => $cached['heroStrip'],
             'testimonials'      => $cached['testimonials'],
