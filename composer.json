@@ -19,6 +19,11 @@
         "livewire/livewire": "^3.6",
         "spatie/laravel-medialibrary": "^11.12",
         "symfony/clock": "7.0",
+        "symfony/css-selector": "7.0",
+        "symfony/event-dispatcher": "7.0",
+        "symfony/psr-http-message-bridge": "7.0",
+        "symfony/string": "7.0",
+        "symfony/translation": "7.0",
         "yajra/laravel-datatables-oracle": "^12.0"
     },
     "require-dev": {
@@ -36,6 +41,9 @@
         "sort-packages": true,
         "allow-plugins": {
             "php-http/discovery": true
+        },
+        "platform": {
+            "php": "8.3.31"
         }
     },
     "extra": {
