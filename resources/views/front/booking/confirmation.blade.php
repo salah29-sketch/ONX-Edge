@@ -321,21 +321,36 @@
                     </div>
                     @endif
 
-                    {{-- الإضافات --}}
-                    @if(!empty($extraPrice) && $extraPrice > 0)
-                    <div class="flex items-center justify-between border-b border-white/8 pb-3">
-                        <span class="text-white/50">إضافات</span>
-                        <span class="font-bold text-green-400">+{{ number_format((float)$extraPrice) }} دج</span>
-                    </div>
-                    @endif
+{{-- الإضافات --}}
+@if(!empty($extraPrice) && $extraPrice > 0)
+<div class="flex items-center justify-between border-b border-white/8 pb-3">
+    <span class="text-white/50">إضافات</span>
+    <span class="font-bold text-green-400">+{{ number_format((float)$extraPrice) }} دج</span>
+</div>
+@endif
 
-                    {{-- الإجمالي --}}
-                    @if(!empty($totalPrice) && $totalPrice > 0)
-                    <div class="flex items-center justify-between border-b border-white/8 pb-3">
-                        <span class="text-white font-black">الإجمالي</span>
-                        <span class="font-black text-orange-400 text-base">{{ number_format((float)$totalPrice) }} دج</span>
-                    </div>
-                    @endif
+{{-- الخصم --}}
+@if(!empty($discountAmount) && $discountAmount > 0)
+<div class="flex items-center justify-between border-b border-white/8 pb-3">
+    <span class="text-white/50">خصم @if(!empty($promoCode))<span class="text-xs font-mono border border-green-500/30 bg-green-500/10 text-green-400 px-2 py-0.5 rounded-full ml-1">{{ $promoCode }}</span>@endif</span>
+    <span class="font-bold text-green-400">- {{ number_format($discountAmount) }} دج</span>
+</div>
+@endif
+
+{{-- الإجمالي --}}
+@if(!empty($totalPrice) && $totalPrice > 0)
+<div class="flex items-center justify-between border-b border-white/8 pb-3">
+    <span class="text-white font-black">الإجمالي</span>
+    @if(!empty($discountAmount) && $discountAmount > 0)
+        <div class="text-right">
+            <div class="text-white/35 text-xs line-through">{{ number_format($totalPrice) }} دج</div>
+            <div class="font-black text-green-400 text-base">{{ number_format($totalPrice - $discountAmount) }} دج</div>
+        </div>
+    @else
+        <span class="font-black text-orange-400 text-base">{{ number_format((float)$totalPrice) }} دج</span>
+    @endif
+</div>
+@endif
 
                     <div class="flex items-center justify-between">
                         <span class="text-white/50">الحالة</span>

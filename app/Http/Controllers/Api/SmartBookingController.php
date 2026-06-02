@@ -60,36 +60,40 @@ class SmartBookingController extends Controller
     }
 
     // ── GET /api/smart-booking/services?category_id= ────────────
-    public function services(Request $request): JsonResponse
-    {
-        $categoryId = (int) $request->query('category_id');
-        if (!$categoryId) return response()->json([]);
+   public function services(Request $request): JsonResponse
+{
+    $categoryId = $request->query('category_id');
 
-        $services = Service::where('is_active', true)
-            ->where('category_id', $categoryId)
-            ->orderBy('sort_order')
-            ->get(['id', 'name', 'description', 'icon', 'base_price',
-                   'booking_type', 'time_mode', 'show_venue_selector',
-                   'show_wilaya_selector', 'deposit_amount']);
+    $query = Service::where('is_active', true);
 
-        return response()->json($services);
+    // إذا أرسل التطبيق قسم معين، فلتر حسبه، وإلا اجلب كل الخدمات
+    if ($categoryId) {
+        $query->where('category_id', (int) $categoryId);
     }
+
+    $services = $query->orderBy('sort_order')
+        ->get(['id', 'name', 'description', 'icon', 'base_price',
+               'booking_type', 'time_mode', 'show_venue_selector',
+               'show_wilaya_selector', 'deposit_amount']);
+
+    return response()->json($services);
+}
 
     // ── GET /api/smart-booking/packages?service_id= ─────────────
-    public function packages(Request $request): JsonResponse
-    {
-        $serviceId = (int) $request->query('service_id');
-        if (!$serviceId) return response()->json([]);
+public function packages(Request $request): JsonResponse
+{
+    $serviceId = $request->query('service_id');
 
-        $packages = Package::with('activeOptions')
-            ->where('is_active', true)
-            ->where('service_id', $serviceId)
-            ->orderBy('sort_order')
-            ->get();
+    $query = Package::with('activeOptions')->where('is_active', true);
 
-        return response()->json($packages);
+    if ($serviceId) {
+        $query->where('service_id', (int) $serviceId);
     }
 
+    $packages = $query->orderBy('sort_order')->get();
+
+    return response()->json($packages);
+}
     // ── GET /api/smart-booking/venues?wilaya_id= ────────────────
     public function venues(Request $request): JsonResponse
     {

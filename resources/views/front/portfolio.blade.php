@@ -73,11 +73,11 @@
         @foreach($reelItems as $reel)
             @php
                 $thumb = null;
-                if ($reel->reel_source === 'youtube' && $reel->youtube_video_id) {
-                    $thumb = 'https://img.youtube.com/vi/' . $reel->youtube_video_id . '/hqdefault.jpg';
-                } elseif ($reel->image_path) {
-                    $thumb = asset($reel->image_path);
-                }
+if ($reel->image_path) {
+    $thumb = asset($reel->image_path);
+} elseif ($reel->reel_source === 'youtube' && $reel->youtube_video_id) {
+    $thumb = 'https://img.youtube.com/vi/' . $reel->youtube_video_id . '/hqdefault.jpg';
+}
                 $srcLabel = $reel->reel_source === 'youtube' ? 'YouTube' : 'Video';
                 $catName  = $reel->categoryRelation?->name ?? '—';
             @endphp

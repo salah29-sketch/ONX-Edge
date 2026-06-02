@@ -67,13 +67,13 @@ Route::get('/status', function () {
 // ── تواصل معنا ───────────────────────────────────────────────────────────
 Route::get('/contact', [ContactController::class, 'index'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,1')->name('contact.store');
-
+    
 // ── الأعمال ──────────────────────────────────────────────────────────────
 Route::get('/portfolio', [PortfolioController::class, 'index'])->name('portfolio');
 
 // ── الخدمات (ديناميكية من DB) ───────────────────────────────────────────
 Route::prefix('services')->name('services.')->group(function () {
-    Route::get('/',           [ServiceController::class, 'index'])->name('index');
+Route::get('/', [ServiceController::class, 'index'])->name('index');
     Route::get('/{slug}',     [ServiceController::class, 'show'])->name('show')->where('slug', '[a-z0-9\-]+');
 });
 
@@ -212,7 +212,8 @@ Route::prefix('worker')->name('worker.')->group(function () {
         ->middleware('throttle:5,1');
 
     Route::middleware('worker.auth')->group(function () {
-        Route::post('logout', [\App\Http\Controllers\Worker\AuthController::class, 'logout'])->name('logout');
-        Route::get('dashboard', [\App\Http\Controllers\Worker\DashboardController::class, 'index'])->name('dashboard');
-    });
+    Route::post('logout', [\App\Http\Controllers\Worker\AuthController::class, 'logout'])->name('logout');
+    Route::get('dashboard', [\App\Http\Controllers\Worker\DashboardController::class, 'index'])->name('dashboard');
+    Route::post('bookings', [\App\Http\Controllers\Worker\DashboardController::class, 'store'])->name('bookings.store');
+});
 });

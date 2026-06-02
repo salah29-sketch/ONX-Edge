@@ -12,20 +12,22 @@ use App\Models\Booking\EventBooking;
 use App\Models\Booking\SubscriptionBooking;
 use App\Models\Client\Client;
 use App\Models\Subscription\Subscription;
+use App\Services\PromoCodeService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Mail\BookingConfirmationMail;
+use Illuminate\Support\Facades\Mail;
 
 class BookingService
 {
-    public function __construct(
-        protected PromoCodeService $promoCodeService
-    ) {
-    }
+protected $promoCodeService;
 
-    /**
-     * Validate a promo code against a total (used for AJAX checks).
-     */
+public function __construct(PromoCodeService $promoCodeService)
+{
+    $this->promoCodeService = $promoCodeService;
+}
+
     public function checkPromoCode(string $code, float $total): array
     {
         $promoCodeClass = '\\App\\Models\\Promo\\PromoCode';
@@ -60,10 +62,6 @@ class BookingService
         ];
     }
 
-    /**
-     * Return the availability status string for a given date.
-     * Returns 'available', 'pending', or 'booked'.
-     */
     public function getDateStatus(string $date, ?\App\Models\Service\Service $service = null): array
     {
         $query = Booking::whereDate('event_date', $date);
@@ -91,9 +89,6 @@ class BookingService
         return ['status' => 'available', 'message' => 'هذا اليوم متاح'];
     }
 
-    /**
-     * Find an existing client by phone or email, or create a new one.
-     */
     public function findOrCreateClient(array $data): Client
     {
         $phone = trim((string) ($data['phone'] ?? ''));
@@ -123,11 +118,11 @@ class BookingService
             ]);
         } else {
             $update = [];
-            if (empty($client->name) && $name !== '')        $update['name']          = $name;
-            if (empty($client->phone) && $phone)             $update['phone']         = $phone;
-            if (empty($client->email) && $email)             $update['email']         = $email;
-            if (!$client->is_company && $isCompany)          $update['is_company']    = true;
-            if (empty($client->business_name) && $businessName) $update['business_name'] = $businessName;
+            if (empty($client->name) && $name !== '')            $update['name']          = $name;
+            if (empty($client->phone) && $phone)                 $update['phone']         = $phone;
+            if (empty($client->email) && $email)                 $update['email']         = $email;
+            if (!$client->is_company && $isCompany)              $update['is_company']    = true;
+            if (empty($client->business_name) && $businessName)  $update['business_name'] = $businessName;
             if (!empty($update)) {
                 $client->update($update);
             }
@@ -136,9 +131,6 @@ class BookingService
         return $client;
     }
 
-    /**
-     * Fetch package/venue metadata for confirmation pages and PDFs.
-     */
     public function getBookingMeta(Booking $booking): array
     {
         $packageName  = null;
@@ -163,9 +155,6 @@ class BookingService
         ];
     }
 
-    /**
-     * Check if a date is taken by an active booking, excluding one booking ID (for edits).
-     */
     public function isDateTakenForUpdate(string $date, int $excludeBookingId): bool
     {
         return Booking::where('id', '!=', $excludeBookingId)
@@ -174,9 +163,6 @@ class BookingService
             ->exists();
     }
 
-    /**
-     * Check if a date is taken by any active booking.
-     */
     public function isDateTaken(string $date): bool
     {
         return Booking::whereDate('event_date', $date)
@@ -188,29 +174,27 @@ class BookingService
     //  Unified booking creation
     // ═══════════════════════════════════════════════════════════════
 
-    /**
-     * Create an event booking with all related records in a single transaction.
-     */
     public function createEventBooking(array $data, PricingResult $pricing): array
     {
         return DB::transaction(function () use ($data, $pricing) {
             $client   = $this->findOrCreateClient($data);
             $password = $this->ensureClientPassword($client);
 
-            $booking = Booking::create([
-                'client_id'       => $client->id,
-                'service_id'      => $data['service_id'],
-                'name'            => $data['name'],
-                'phone'           => $data['phone'],
-                'email'           => $data['email'] ?? null,
-                'event_date'      => $data['event_date'],
-                'booking_type'    => BookingType::EVENT->value,
-                'status'          => BookingStatus::PENDING->value,
-                'total_price'     => $pricing->total,
-                'final_price'     => $pricing->total,
-                'discount_amount' => 0,
-                'notes'           => $data['notes'] ?? null,
-            ]);
+$booking = Booking::create([
+    'client_id'       => $client->id,
+    'service_id'      => $data['service_id'],
+    'package_id'      => $data['package_id'] ?? null,  // ← هذا السطر ناقص
+    'name'            => $data['name'],
+    'phone'           => $data['phone'],
+    'email'           => $data['email'] ?? null,
+    'event_date'      => $data['event_date'],
+    'booking_type'    => BookingType::EVENT->value,
+    'status'          => BookingStatus::PENDING->value,
+    'total_price'     => $pricing->total,
+    'final_price'     => $pricing->total,
+    'discount_amount' => 0,
+    'notes'           => $data['notes'] ?? null,
+]);
 
             EventBooking::create([
                 'booking_id'   => $booking->id,
@@ -225,6 +209,7 @@ class BookingService
 
             $this->createBookingItems($booking, $data, $pricing);
             $this->applyPromoIfPresent($booking, $data);
+            $this->sendBookingEmails($booking->fresh());
 
             return [
                 'booking'            => $booking->fresh(),
@@ -233,9 +218,6 @@ class BookingService
         });
     }
 
-    /**
-     * Create an appointment booking in a single transaction.
-     */
     public function createAppointmentBooking(array $data, PricingResult $pricing): array
     {
         return DB::transaction(function () use ($data, $pricing) {
@@ -267,6 +249,7 @@ class BookingService
 
             $this->createBookingItems($booking, $data, $pricing);
             $this->applyPromoIfPresent($booking, $data);
+            $this->sendBookingEmails($booking->fresh());
 
             return [
                 'booking'            => $booking->fresh(),
@@ -275,9 +258,6 @@ class BookingService
         });
     }
 
-    /**
-     * Create a subscription booking in a single transaction.
-     */
     public function createSubscriptionBooking(array $data, PricingResult $pricing): array
     {
         return DB::transaction(function () use ($data, $pricing) {
@@ -318,6 +298,7 @@ class BookingService
 
             $this->createBookingItems($booking, $data, $pricing);
             $this->applyPromoIfPresent($booking, $data);
+            $this->sendBookingEmails($booking->fresh());
 
             return [
                 'booking'            => $booking->fresh(),
@@ -328,10 +309,6 @@ class BookingService
 
     // ── Private helpers ──────────────────────────────────────────────
 
-    /**
-     * Assign a random plain-text password to the client if they don't have one yet.
-     * Returns the plain-text password so it can be shown once, or null if already set.
-     */
     private function ensureClientPassword(Client $client): ?string
     {
         if ($client->password) {
@@ -345,9 +322,6 @@ class BookingService
         return $plain;
     }
 
-    /**
-     * Persist BookingItem rows for the package and any selected options.
-     */
     private function createBookingItems(Booking $booking, array $data, PricingResult $pricing): void
     {
         if (!empty($data['package_name'])) {
@@ -393,9 +367,28 @@ class BookingService
         }
     }
 
-    /**
-     * Apply a promo code to the booking if one was provided and is valid.
-     */
+    private function sendBookingEmails(Booking $booking): void
+    {
+        $data = [
+            'client_name' => $booking->name,
+            'booking_id'  => $booking->id,
+            'date'        => $booking->event_date,
+            'services'    => [$booking->service?->name ?? '—'],
+            'total_price' => $booking->total_price ? number_format((float)$booking->total_price) : null,
+        ];
+
+        // تنبيه للإدارة
+        Mail::to('hamzaouisalah29@gmail.com')
+            ->send(new BookingConfirmationMail(
+                array_merge($data, ['client_name' => 'الإدارة — حجز جديد #' . $booking->id])
+            ));
+
+        // تأكيد للعميل
+        if (!empty($booking->email)) {
+            Mail::to($booking->email)->send(new BookingConfirmationMail($data));
+        }
+    }
+
     private function applyPromoIfPresent(Booking $booking, array $data): void
     {
         if (empty($data['promo_code'])) {

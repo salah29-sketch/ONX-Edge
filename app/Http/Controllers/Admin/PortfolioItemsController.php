@@ -197,12 +197,9 @@ class PortfolioItemsController extends Controller
         // FIX #2: استخراج youtube_video_id للريلز من reel_url
         if ($isReel && $request->reel_source === 'youtube' && $request->filled('reel_url')) {
             $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($request->reel_url);
-        } elseif (!$isReel || $request->reel_source !== 'youtube') {
-            // امسح الـ ID لو تغير المصدر
-            if ($portfolioItem->media_type !== 'youtube') {
-                $data['youtube_video_id'] = null;
-            }
-        }
+        } elseif (!$isReel) {
+    $data['youtube_video_id'] = null;
+}
 
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
@@ -233,7 +230,10 @@ class PortfolioItemsController extends Controller
             self::deleteStoredFile($portfolioItem->video_path);
             $data['video_path'] = null;
         }
-
+if ($isReel && $portfolioItem->reel_source === 'youtube' && !$request->filled('reel_url') && $portfolioItem->reel_url) {
+    $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($portfolioItem->reel_url);
+    $data['reel_url'] = $portfolioItem->reel_url;
+}
         $portfolioItem->update($data);
 
         // FIX #6: امسح cache التصنيفات عند تحديث عمل

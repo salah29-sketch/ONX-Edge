@@ -9,10 +9,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Passport\HasApiTokens;
 
 class Client extends Authenticatable
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, HasApiTokens;
 
     protected static function newFactory()
     {
@@ -48,7 +49,6 @@ class Client extends Authenticatable
     public function setPasswordAttribute($value): void
     {
         if ($value) {
-            // إذا كانت القيمة مشفرة مسبقاً بـ bcrypt/argon لا تعيد تشفيرها
             $isHashed = str_starts_with($value, '$2y$')
                      || str_starts_with($value, '$2a$')
                      || str_starts_with($value, '$argon2');
@@ -62,7 +62,6 @@ class Client extends Authenticatable
         return $this->hasMany(Booking::class);
     }
 
-    /** الاشتراكات الشهرية (باقات الإعلانات) */
     public function subscriptions()
     {
         return $this->hasMany(\App\Models\Subscription\Subscription::class);
