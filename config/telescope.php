@@ -94,6 +94,7 @@ return [
 
     'middleware' => [
         'web',
+    \Laravel\Telescope\Http\Middleware\Authorize::class,
 
     ],
 
