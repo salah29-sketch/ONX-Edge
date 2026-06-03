@@ -108,7 +108,7 @@ class PortfolioItemsController extends Controller
 
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
-            $ext  = 'jpg';
+            $ext  = 'webp';
             $name = 'ONX' . date('Y') . '_' . Str::random(4) . '.' . $ext;
             $path = self::compressAndSave($request->file('image'), 'portfolio', $name);
             $data['image_path'] = 'storage/' . $path;
@@ -221,7 +221,7 @@ class PortfolioItemsController extends Controller
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
             self::deleteStoredFile($portfolioItem->image_path);
-            $ext  = 'jpg';
+            $ext  = 'webp';
             $name = 'ONX' . date('Y') . '_' . Str::random(4) . '.' . $ext;
             $path = self::compressAndSave($request->file('image'), 'portfolio', $name);
             $data['image_path'] = 'storage/' . $path;
@@ -293,11 +293,17 @@ if ($isReel && $portfolioItem->reel_source === 'youtube' && !$request->filled('r
             $image->scaleDown(width: 1920);
         }
 
-        $savePath = storage_path('app/public/' . $folder . '/' . $name);
-        $image->toJpeg(85)->save($savePath);
+        $savePath   = storage_path('app/public/' . $folder . '/' . $name);
+        $publicPath = base_path('../public_html/storage/' . $folder . '/' . $name);
 
-        return $folder . '/' . $name;
-    }
+        $image->toWebp(85)->save($savePath);
+        // نسخ تلقائي لـ public_html
+        if (!is_dir(dirname($publicPath))) {
+            mkdir(dirname($publicPath), 0775, true);
+        }
+        copy($savePath, $publicPath);
+
+
 
     private static function deleteStoredFile(?string $publicRelative): void
     {

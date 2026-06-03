@@ -1,0 +1,2 @@
+[03-Jun-2026 10:08:04 UTC] PHP Fatal error:  Cannot use Illuminate\Support\Facades\Schedule as Schedule because the name is already in use in /home/ssxruszh/laravel_app/routes/console.php on line 8
+[03-Jun-2026 10:09:04 UTC] PHP Fatal error:  Cannot use Illuminate\Support\Facades\Schedule as Schedule because the name is already in use in /home/ssxruszh/laravel_app/routes/console.php on line 8

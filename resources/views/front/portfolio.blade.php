@@ -1,6 +1,9 @@
 @extends('layouts.front_tailwind')
 
 @section('title', 'ONX | الأعمال')
+@section('og_title', 'ONX | أعمالنا — إنتاج بصري فاخر')
+@section('og_image', asset('img/events.jpg'))
+
 @section('meta_description', 'أعمال ONX — نماذج من مشاريعنا في الإعلانات، الفعاليات، والتجارب البصرية.')
 @section('has_hero', true)
 @section('content')
