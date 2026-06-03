@@ -32,6 +32,7 @@
     <style>
 *,*::before,*::after{box-sizing:border-box;}
 [x-cloak]{display:none!important;}
+html { transition: --onx-brand .4s ease; }
 :root{
     --or:#f97316;--or-dim:rgba(249,115,22,.12);--or-glow:rgba(249,115,22,.28);
     --glass:rgba(255,255,255,.03);--border:rgba(255,255,255,.07);
@@ -766,10 +767,13 @@ function servicesPage() {
             return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);
         },
 
-        _applyColor(hex) {
-            document.documentElement.style.setProperty('--onx-brand', hex);
-            document.documentElement.style.setProperty('--onx-brand-rgb', this.hexToRgb(hex));
-        },
+       _applyColor(hex) {
+    document.documentElement.style.setProperty('--onx-brand', hex);
+    document.documentElement.style.setProperty('--onx-brand-rgb', this.hexToRgb(hex));
+    document.documentElement.style.setProperty('--or', hex);
+    document.documentElement.style.setProperty('--or-dim', 'rgba('+this.hexToRgb(hex)+',.12)');
+    document.documentElement.style.setProperty('--or-glow', 'rgba('+this.hexToRgb(hex)+',.28)');
+},
 
         selectCat(i) {
             this.idx = i;
