@@ -1,6 +1,5 @@
 <!-- ════════════════════════════════════════════════════════════════════
      BOOKING DRAWER COMPONENT — الحجز السريع بـ 3 خطوات
-     
      ════════════════════════════════════════════════════════════════════ -->
 
 <style>
@@ -18,11 +17,15 @@
 .qb-step-lbl.active,.qb-step-lbl.done{color:rgba(var(--onx-brand-rgb),.8);}
 
 /* Header */
-.qb-head{padding:10px 16px 12px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
-.qb-close-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
+.qb-head{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;}
+.qb-close-btn{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
 .qb-close-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
-.qb-back-btn{background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:2px 6px;font-size:15px;transition:.2s;margin-top:3px;}
+.qb-back-btn{background:transparent;border:none;color:rgba(255,255,255,.4);cursor:pointer;padding:2px 4px;font-size:14px;transition:.2s;}
 .qb-back-btn:hover{color:#fff;}
+
+/* Hide scrollbar */
+.qb-screen::-webkit-scrollbar{display:none;}
+.qb-screen{-ms-overflow-style:none;scrollbar-width:none;}
 
 /* Screens */
 .qb-screens{position:relative;flex:1;overflow:hidden;}
@@ -122,17 +125,19 @@
         </div>
     </div>
 
-    <!-- Header -->
-    <div class="qb-head">
-        <div style="display:flex;align-items:flex-start;gap:6px;flex:1;">
-            <button x-show="qbStep>1" type="button" class="qb-back-btn" @click="qbStep--">←</button>
-            <div>
-                <div style="font-size:10px;color:rgba(255,255,255,.3);font-weight:700;letter-spacing:.05em;margin-bottom:2px;">حجز سريع</div>
-                <div style="font-size:15px;font-weight:900;color:#fff;" x-text="qbStep===1?'معلوماتك':qbStep===2?'الفعالية':qbStep===3?'ملخص الحجز':'تم الحجز ✓'"></div>
-            </div>
-        </div>
+   <!-- Header -->
+<div class="qb-head">
+    <div style="display: flex; justify-content: space-between; align-items: center; flex-direction: row-reverse;">
+        <!-- زر الإغلاق -->
         <button type="button" class="qb-close-btn" @click="closeDrawer()">✕</button>
+        
+        <!-- النصوص (العنوان) -->
+        <div style="text-align: right;">
+            <div style="font-size: 10px; color: rgba(255,255,255,.3); font-weight: 700; letter-spacing: .05em; margin-bottom: 3px;">حجز سريع</div>
+            <div style="font-size: 16px; font-weight: 900; color: #fff;" x-text="qbStep===1?'معلوماتك':qbStep===2?'الفعالية':qbStep===3?'ملخص الحجز':'تم الحجز ✓'"></div>
+        </div>
     </div>
+</div>
 
     <!-- Screens -->
     <div class="qb-screens">

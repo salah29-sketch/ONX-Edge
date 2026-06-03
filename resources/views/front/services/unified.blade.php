@@ -593,7 +593,7 @@ html { transition: --onx-brand .4s ease; }
 </div>
 
 
- @include('front.services.booking-drawer')
+@include('front.services.booking-drawer')
 
 </div>
 
@@ -997,7 +997,7 @@ function servicesPage() {
                         service_id: this.selSvc,
                         package_id: this.qbPkg.id,
                         start_time: this.qbForm.start_time || null,
-                        end_time: null,
+                        end_time: '04:00',
                         wilaya_id: this.qbForm.wilaya_id || null,
                         venue_id: (this.qbForm.venue_id && this.qbForm.venue_id !== 'custom') ? this.qbForm.venue_id : null,
                     })
