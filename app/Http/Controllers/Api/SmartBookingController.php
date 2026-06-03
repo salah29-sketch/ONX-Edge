@@ -259,6 +259,7 @@ public function packages(Request $request): JsonResponse
                 'booking_ref'        => str_pad($booking->id, 4, '0', STR_PAD_LEFT),
                 'generated_password' => $result['generated_password'] ?? null,
                 'confirmation_url'   => route('booking.confirmation', $booking) . '?token=' . $token,
+                'pdf_url'            => route('booking.pdf', $booking) . '?token=' . $token,
                 'pricing'            => $pricing->toArray(),
             ]);
         } catch (\Exception $e) {

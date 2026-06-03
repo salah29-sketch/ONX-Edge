@@ -88,6 +88,7 @@ return view('front.booking.confirmation', [
             ?? ($client ? ($client->email ?: $client->phone) : null);
         $clientPassword = $creds['password'] ?? null;
 
+        Pdf::setOptions(['isRemoteEnabled' => true, 'isHtml5ParserEnabled' => true, 'defaultFont' => 'dejavu sans']);
         $pdf = Pdf::loadView('front.booking.pdf', [
             'booking'         => $booking,
             'packageName'     => $meta['packageName'],

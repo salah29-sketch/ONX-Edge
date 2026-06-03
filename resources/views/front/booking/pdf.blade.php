@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="fr" dir="ltr">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <title>Bon de réservation - ONX</title>
@@ -10,6 +10,8 @@
 
         body{
             font-family: DejaVu Sans, sans-serif;
+        direction: rtl;
+        unicode-bidi: bidi-override;
             color:#111;
             font-size:10px;
             line-height:1.35;
@@ -374,7 +376,7 @@
 
                         <div class="item">
                             <span class="label">Nom complet</span>
-                            <span class="value">{{ $booking->name }}</span>
+                            <span class="value">{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs($booking->name) }}</span>
                         </div>
 
                         <div class="item">
@@ -402,12 +404,12 @@
 
                         <div class="item">
                             <span class="label">Service</span>
-                            <span class="value">{{ $booking->service?->name ?? '—' }}</span>
+                            <span class="value">{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs($booking->service?->name ?? '—') }}</span>
                         </div>
 
                         <div class="item">
                             <span class="label">Pack</span>
-                            <span class="value">{{ $packageName ?: 'À confirmer' }}</span>
+                            <span class="value">{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs($packageName ?: 'À confirmer') }}</span>
                         </div>
 
                         @if(!empty($booking->ads_type))
@@ -422,12 +424,12 @@
                         @if($booking->event_date)
                         <div class="item">
                             <span class="label">Date</span>
-                            <span class="value">{{ $booking->event_date ?: 'À confirmer' }}</span>
+                            <span class="value">{{ $booking->event_date ? date('Y-m-d', strtotime($booking->event_date)) : 'À confirmer' }}</span>
                         </div>
 
                         <div class="item">
                             <span class="label">Lieu</span>
-                            <span class="value">{{ $locationName ?: 'À confirmer' }}</span>
+                            <span class="value">{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs($locationName ?: 'À confirmer') }}</span>
                         </div>
                         @endif
 
@@ -541,9 +543,9 @@
     </table>
 
     <div class="client-login-box">
-        <div class="title">منطقة العملاء — بيانات الدخول</div>
-        <div class="row"><strong>اسم المستخدم (البريد أو الهاتف):</strong> {{ $clientLogin ?? '—' }}</div>
-        <div class="row"><strong>كلمة المرور:</strong> {{ $clientPassword ?? '— (تواصل معنا لإعادة التعيين)' }}</div>
+        <div class="title">{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs('منطقة العملاء — بيانات الدخول') }}</div>
+        <div class="row"><strong>{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs('اسم المستخدم (البريد أو الهاتف):') }}</strong> {{ $clientLogin ?? '—' }}</div>
+        <div class="row"><strong>{{ (new \ArPHP\I18N\Arabic())->utf8Glyphs('كلمة المرور:') }}</strong> {{ $clientPassword ?? (new \ArPHP\I18N\Arabic())->utf8Glyphs('تواصل معنا لإعادة التعيين') }}</div>
     </div>
 
     <div class="footer">
@@ -564,4 +566,12 @@
 
 </div>
 </body>
-</html>
+</html>@php
+function arabicPDF($text) {
+    if (class_exists('\Ar\ArPHP')) {
+        $ar = new \Ar\ArPHP();
+        return $ar->utf8Glyphs($text);
+    }
+    return $text;
+}
+@endphp

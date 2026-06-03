@@ -300,16 +300,32 @@
             <div x-show="qbErr" style="font-size:11px;color:#f87171;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:8px 11px;margin-top:10px;" x-text="qbErr"></div>
         </div>
 
-        <!-- ── الشاشة 4: النجاح ── -->
+                <!-- ── الشاشة 4: النجاح ── -->
         <div class="qb-screen qb-success-screen" :class="qbStep===4?'active':''">
             <div class="qb-success-icon">✓</div>
             <div style="font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;">تم الحجز!</div>
             <div class="qb-success-ref" x-text="'#'+qbBookingRef"></div>
             <div style="font-size:12px;color:rgba(255,255,255,.45);line-height:1.7;margin-top:8px;">سنتواصل معك قريباً لتأكيد التفاصيل.</div>
+
+            <!-- بيانات الدخول -->
+            <template x-if="qbBookingPassword">
+                <div style="background:rgba(var(--onx-brand-rgb),.07);border:1px solid rgba(var(--onx-brand-rgb),.2);border-radius:12px;padding:12px 14px;margin-top:14px;text-align:right;">
+                    <div style="font-size:10px;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;">بيانات دخول حسابك</div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">اسم المستخدم / الإيميل:</div>
+                    <div style="font-size:13px;font-weight:800;color:#fff;font-family:monospace;margin-bottom:10px;" x-text="qbForm.email"></div>
+                    <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:4px;">كلمة السر:</div>
+                    <div style="font-size:15px;font-weight:900;color:var(--onx-brand);font-family:monospace;letter-spacing:.1em;" x-text="qbBookingPassword"></div>
+                </div>
+            </template>
+
             <div class="qb-success-btns">
+                <template x-if="qbConfirmationUrl">
+                    <a :href="qbPdfUrl || qbConfirmationUrl.replace('/confirmation/', '/pdf/')" class="btn-pdf" style="background:var(--onx-brand);color:#000;display:block;text-align:center;padding:10px;font-size:12px;font-weight:700;border-radius:10px;text-decoration:none;margin-top:8px;">⬇ تحميل PDF التأكيد</a>
+                </template>
                 <a href="/" class="btn-home">← العودة للرئيسية</a>
             </div>
         </div>
+
     </div>
 
     <!-- Footer -->
@@ -318,7 +334,7 @@
         <button type="button" class="qb-btn-next"
                 @click="qbNextStep()"
                 :disabled="!qbCanProceed() || qbBusy"
-                x-text="qbStep===3 ? (qbBusy?'جاري الإرسال...':'تأكيد الحجز ←') : 'التالي →'">
+                x-text="qbStep===3 ? (qbBusy ? 'جاري الإرسال...' : 'تأكيد الحجز ←') : 'التالي →'">
         </button>
     </div>
 </div>

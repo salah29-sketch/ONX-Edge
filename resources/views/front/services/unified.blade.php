@@ -766,6 +766,9 @@ function servicesPage() {
         qbTravelCost: 0,
         qbErr: '',
         qbBookingRef: '',
+        qbBookingPassword: '',
+        qbConfirmationUrl: '',
+        qbPdfUrl: '',
         qbBookingId: '',
 
         bookingBase: "https:\/\/onx-edge.com\/booking",
@@ -1080,6 +1083,9 @@ function servicesPage() {
                 const d = await r.json();
                 if (d.success) {
                     this.qbBookingRef = d.booking_ref || d.booking_id || '';
+                    this.qbBookingPassword = d.generated_password || '';
+                    this.qbConfirmationUrl = d.confirmation_url || '';
+                    this.qbPdfUrl = d.pdf_url || '';
                     this.qbBookingId = d.booking_id || '';
                     this.qbStep = 4;
                 } else {
