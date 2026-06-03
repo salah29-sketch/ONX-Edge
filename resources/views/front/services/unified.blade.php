@@ -139,8 +139,6 @@ html { transition: --onx-brand .4s ease; }
 /* badge زاوية يسرى علوية مع glow */
 .pkg-feat-label{display:none;position:absolute;top:14px;left:14px;font-size:9px;font-weight:900;color:var(--onx-brand);letter-spacing:.1em;text-transform:uppercase;background:rgba(var(--onx-brand-rgb),.12);border:1px solid rgba(var(--onx-brand-rgb),.35);border-radius:99px;padding:3px 9px;box-shadow:0 0 10px rgba(var(--onx-brand-rgb),.3),0 0 20px rgba(var(--onx-brand-rgb),.12);}
 .pkg.feat .pkg-feat-label{display:block;}
-/* إزاحة الاسم للأسفل قليلاً عند وجود badge */
-.pkg.feat .pkg-nm{margin-top:22px;}
 .pkg-nm{font-size:14px;font-weight:900;color:#fff;margin-bottom:4px;}
 .pkg-old{font-size:11px;color:rgba(255,255,255,.22);text-decoration:line-through;margin-bottom:2px;min-height:16px;}
 .pkg-pr{font-size:26px;font-weight:900;color:var(--onx-brand);line-height:1;margin-bottom:14px;}
@@ -507,11 +505,17 @@ html { transition: --onx-brand .4s ease; }
                         <div class="det-lbl">الباقات المتاحة</div>
                         <div class="pkgs-grid-inner">
                             <template x-for="pkg in det.packages" :key="pkg.id">
-                                <div class="pkg" :class="pkg.is_featured?'feat':''">
+                                <div class="pkg"
+                                     :class="selPkg && selPkg.id===pkg.id ? 'feat' : ''"
+                                     @click="selPkg = pkg">
                                     <div class="pkg-line"></div>
-                                    <div class="pkg-nm" x-text="pkg.name"></div>
-                                    <!-- badge أسفل الاسم: نص صغير بلون الـ brand -->
-                                    <div class="pkg-feat-label">● الأكثر طلباً</div>
+                                    <!-- اسم الباقة + badge في نفس السطر -->
+                                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">
+                                        <div class="pkg-nm" x-text="pkg.name" style="margin-bottom:0;"></div>
+                                        <template x-if="pkg.is_featured">
+                                            <span style="font-size:9px;font-weight:900;color:var(--onx-brand);letter-spacing:.1em;text-transform:uppercase;background:rgba(var(--onx-brand-rgb),.12);border:1px solid rgba(var(--onx-brand-rgb),.35);border-radius:99px;padding:2px 8px;">● الأكثر طلباً</span>
+                                        </template>
+                                    </div>
                                     <div class="pkg-old" x-text="pkg.old_price>0&&pkg.old_price>pkg.price?n(pkg.old_price)+' دج':''"></div>
                                     <div class="pkg-pr">
                                         <span x-text="pkg.price>0?n(pkg.price):(pkg.price_note||'حسب الطلب')"></span>
@@ -589,7 +593,7 @@ html { transition: --onx-brand .4s ease; }
 </div>
 
 
-@include('booking-drawer')
+ @include('front.services.booking-drawer')
 
 </div>
 
@@ -750,7 +754,7 @@ function servicesPage() {
         qbAvailability: null,
         qbWilayas: [],
         qbVenues: [],
-        qbForm: { name:'', phone:'', email:'', event_date:'', start_time:'19:00', wilaya_id:null, venue_id:null, promo_code:'' },
+        qbForm: { name:'', phone:'', email:'', event_date:'', start_time:'19:00', wilaya_id:null, venue_id:null, venue_custom:'', promo_code:'' },
         qbPricing: 0,
         qbPricingOld: 0,
         qbPricingFinal: 0,
@@ -758,7 +762,8 @@ function servicesPage() {
         qbPromoMsg: '',
         qbPromoDiscount: 0,
         qbPromoLoading: false,
-        qbBusy: false,
+        qbTimeCost: 0,
+        qbTravelCost: 0,
         qbErr: '',
         qbBookingRef: '',
         qbBookingId: '',
@@ -943,10 +948,12 @@ function servicesPage() {
             if (!this.det) return;
             this.qbPkg = pkg;
             this.qbStep = 1;
-            this.qbForm = { name:'', phone:'', email:'', event_date:'', start_time:'19:00', wilaya_id:null, venue_id:null, promo_code:'' };
+            this.qbForm = { name:'', phone:'', email:'', event_date:'', start_time:'19:00', wilaya_id:null, venue_id:null, venue_custom:'', promo_code:'' };
             this.qbPromoApplied = false;
             this.qbPromoMsg = '';
             this.qbPromoDiscount = 0;
+            this.qbTimeCost = 0;
+            this.qbTravelCost = 0;
             this.qbPricing = pkg.price || 0;
             this.qbPricingOld = pkg.old_price || 0;
             this.qbPricingFinal = this.qbPricing;
@@ -980,6 +987,31 @@ function servicesPage() {
             } catch(e) { this.qbVenues = []; }
         },
 
+        async recalcPrice() {
+            if (!this.selSvc || !this.qbPkg) return;
+            try {
+                const r = await fetch('/api/smart-booking/price', {
+                    method: 'POST',
+                    headers: {'Content-Type':'application/json','X-CSRF-TOKEN':document.querySelector('meta[name=csrf-token]').content},
+                    body: JSON.stringify({
+                        service_id: this.selSvc,
+                        package_id: this.qbPkg.id,
+                        start_time: this.qbForm.start_time || null,
+                        end_time: null,
+                        wilaya_id: this.qbForm.wilaya_id || null,
+                        venue_id: (this.qbForm.venue_id && this.qbForm.venue_id !== 'custom') ? this.qbForm.venue_id : null,
+                    })
+                });
+                const d = await r.json();
+                this.qbTimeCost   = d.time_cost   || 0;
+                this.qbTravelCost = d.travel_cost || 0;
+                this.qbPricing    = d.total       || this.qbPkg.price || 0;
+                this.qbPricingFinal = this.qbPromoApplied
+                    ? Math.max(0, this.qbPricing - this.qbPromoDiscount)
+                    : this.qbPricing;
+            } catch(e) {}
+        },
+
         async applyPromoQB() {
             const code = this.qbForm.promo_code.trim().toUpperCase();
             if (!code) { this.qbPromoMsg = 'أدخل الكود'; return; }
@@ -1010,7 +1042,10 @@ function servicesPage() {
                 return this.qbForm.name.trim() && emailRegex.test(this.qbForm.email) && phoneRegex.test(this.qbForm.phone);
             }
             if (this.qbStep === 2) {
-                return this.qbForm.event_date && this.qbForm.start_time && this.qbForm.wilaya_id && this.qbForm.venue_id;
+                const venueOk = this.qbForm.venue_id === 'custom'
+                    ? (this.qbForm.venue_custom || '').trim().length > 0
+                    : !!this.qbForm.venue_id;
+                return this.qbForm.event_date && this.qbForm.start_time && this.qbForm.wilaya_id && venueOk;
             }
             return true;
         },
@@ -1036,8 +1071,10 @@ function servicesPage() {
                         event_date: this.qbForm.event_date,
                         start_time: this.qbForm.start_time,
                         wilaya_id: this.qbForm.wilaya_id,
-                        venue_id: this.qbForm.venue_id,
-                        promo_code: this.qbPromoApplied ? this.qbForm.promo_code : null
+                        venue_id: (this.qbForm.venue_id && this.qbForm.venue_id !== 'custom') ? this.qbForm.venue_id : null,
+                        venue_custom: this.qbForm.venue_id === 'custom' ? this.qbForm.venue_custom : null,
+                        promo_code: this.qbPromoApplied ? this.qbForm.promo_code : null,
+                        type: this.det?.booking_type || 'event',
                     })
                 });
                 const d = await r.json();

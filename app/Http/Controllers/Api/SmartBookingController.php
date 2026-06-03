@@ -151,6 +151,37 @@ public function packages(Request $request): JsonResponse
         return response()->json($result->toArray());
     }
 
+    // ── POST /api/smart-booking/promo ───────────────────────────
+    public function promo(\Illuminate\Http\Request $request): JsonResponse
+    {
+        $code  = strtoupper(trim($request->input("code", "")));
+        $total = (float) $request->input("total", 0);
+
+        if (!$code) {
+            return response()->json(["valid" => false, "message" => "أدخل الكود"]);
+        }
+
+        $promo = \App\Models\Promo\PromoCode::where("code", $code)->first();
+
+        if (!$promo || !$promo->isValid()) {
+            return response()->json(["valid" => false, "message" => "كود غير صالح أو منتهي الصلاحية"]);
+        }
+
+        if (!$promo->meetsMinOrder($total)) {
+            return response()->json(["valid" => false, "message" => "الحد الأدنى للطلب هو " . number_format($promo->min_order_value) . " دج"]);
+        }
+
+        $discount = $promo->calculateDiscount($total);
+        $final    = max(0, $total - $discount);
+
+        return response()->json([
+            "valid"    => true,
+            "discount" => $discount,
+            "final"    => $final,
+            "message"  => "✓ خصم " . ($promo->discount_type === "percent" ? $promo->value . "%" : number_format($discount) . " دج"),
+        ]);
+    }
+
     // ── POST /api/smart-booking/submit ──────────────────────────
     public function submit(Request $request): JsonResponse
     {
