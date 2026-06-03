@@ -38,7 +38,6 @@
 *,*::before,*::after{box-sizing:border-box;}
 [x-cloak]{display:none!important;}
 html { transition: --onx-brand .4s ease; }
-        
 :root{
     --or:#f97316;--or-dim:rgba(249,115,22,.12);--or-glow:rgba(249,115,22,.28);
     --glass:rgba(255,255,255,.03);--border:rgba(255,255,255,.07);
@@ -681,53 +680,7 @@ html { transition: --onx-brand .4s ease; }
 </div>
 
 
-<div x-show="drawerOpen" x-cloak class="qb-backdrop" @click="closeDrawer()"></div>
-<div class="qb-drawer" :class="drawerOpen?'open':''">
-    <div class="qb-head">
-        <button type="button" class="qb-close-btn" @click="closeDrawer()">✕</button>
-        <div class="qb-title">حجز فوري</div>
-        <div class="qb-sub" x-text="det?.name+' — '+(qbPkg?.name||'')"></div>
-    </div>
-    <div class="qb-body">
-        <template x-if="qbDone">
-            <div class="qb-success">
-                <div class="qb-success-ico">✅</div>
-                <div class="qb-success-title">تم استلام طلبك!</div>
-                <div class="qb-ref" x-text="'#'+qbRef"></div>
-                <div class="qb-success-sub">سنتواصل معك قريباً لتأكيد التفاصيل.</div>
-                <button type="button" style="margin-top:20px;background:#f97316;color:#000;border:none;border-radius:99px;padding:10px 28px;font-size:13px;font-weight:900;cursor:pointer;font-family:inherit;" @click="closeDrawer()">حسناً ✓</button>
-            </div>
-        </template>
-        <template x-if="!qbDone">
-            <div>
-                <template x-if="qbPkg && qbPkg.price>0">
-                    <div class="qb-pkg-box">
-                        <span class="qb-pkg-nm" x-text="qbPkg.name"></span>
-                        <span class="qb-pkg-pr" x-text="n(qbPkg.price)+' دج'"></span>
-                    </div>
-                </template>
-                <div class="qb-field"><label class="qb-label">الاسم الكامل *</label><input type="text" class="qb-input" x-model="qbForm.name" placeholder="اسمك الكامل"></div>
-                <div class="qb-field"><label class="qb-label">رقم الهاتف *</label><input type="tel" class="qb-input" x-model="qbForm.phone" placeholder="05xxxxxxxx" dir="ltr"></div>
-                <div class="qb-field"><label class="qb-label">البريد الإلكتروني *</label><input type="email" class="qb-input" x-model="qbForm.email" placeholder="email@example.com" dir="ltr"></div>
-                <div class="qb-field" x-show="det && det.booking_type==='event'"><label class="qb-label">تاريخ الفعالية</label><input type="date" class="qb-input" x-model="qbForm.event_date" dir="ltr" style="color-scheme:dark;"></div>
-                <div class="qb-field"><label class="qb-label">ملاحظات (اختياري)</label><textarea class="qb-input" x-model="qbForm.notes" rows="2" placeholder="أي تفاصيل..." style="resize:vertical;"></textarea></div>
-            </div>
-        </template>
-    </div>
-    <div class="qb-foot" x-show="!qbDone">
-        <div x-show="qbErr" class="qb-err" x-text="qbErr"></div>
-        <button type="button" class="qb-submit" @click="submitQuickBook()" :disabled="qbBusy">
-            <span x-show="!qbBusy">تأكيد الحجز الآن ←</span>
-            <span x-show="qbBusy" style="display:flex;align-items:center;justify-content:center;gap:8px;">
-                <svg style="width:16px;height:16px;animation:spin 1s linear infinite;" fill="none" viewBox="0 0 24 24">
-                    <circle style="opacity:.25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path style="opacity:.75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                </svg>
-                جاري الإرسال...
-            </span>
-        </button>
-    </div>
-</div>
+
 
 <!-- ════════════════════════════════════════════════════════════════
      QUICK BOOKING DRAWER — 3 خطوات في الجانب الأيسر
@@ -740,11 +693,11 @@ html { transition: --onx-brand .4s ease; }
 <div class="qb-drawer" :class="drawerOpen?'open':''">
     
     <!-- خط التقدم -->
-    <div class="qb-progress">
-        <div class="qb-step" :class="qbStep>=1?'done':''" :class.active="qbStep===1"></div>
-        <div class="qb-step" :class="qbStep>=2?'done':''" :class.active="qbStep===2"></div>
-        <div class="qb-step" :class="qbStep===3?'active':qbStep>3?'done':''"></div>
-    </div>
+<div class="qb-progress">
+    <div class="qb-step" :class="qbStep===1?'active':qbStep>1?'done':''"></div>
+    <div class="qb-step" :class="qbStep===2?'active':qbStep>2?'done':''"></div>
+    <div class="qb-step" :class="qbStep===3?'active':qbStep>3?'done':''"></div>
+</div>
 
     <!-- الـ Header مع الأزرار -->
     <div class="qb-head">
@@ -1047,6 +1000,8 @@ function servicesPage() {
         drawerOpen: false,
         qbStep: 1,                          // 1, 2, 3, 4 (success)
         qbPkg: null,                        // الباقة المختارة
+        qbDone: false,   // ← أضف هذا
+qbRef: '',       // ← وهذا
         qbAvailability: null,               // 'available' | 'booked'
         qbWilayas: [],                      // قائمة الولايات
         qbVenues: [],                       // قائمة القاعات
@@ -1155,6 +1110,7 @@ function servicesPage() {
                 const pr = await fetch('/api/smart-booking/packages?service_id='+svc.id);
                 const packages = (await pr.json()).filter(p => !p.is_buildable);
                 this.det = {
+                    id: svc.id, 
                     name: svc.name,
                     description: svc.description || '',
                     booking_type: svc.booking_type || 'event',
@@ -1165,7 +1121,7 @@ function servicesPage() {
                 };
                 this.selPkg = null;
             } catch(e) {
-                this.det = { name:svc.name, description:svc.description||'', booking_type:'event', packages:[], portfolio:[], testimonials:[], stats:{projects:'50+',delivery:'أسبوع'} };
+                this.det = {id:svc.id, name:svc.name, description:svc.description||'', booking_type:'event', packages:[], portfolio:[], testimonials:[], stats:{projects:'50+',delivery:'أسبوع'} };
             }
             this.loadingDet = false;
         },
@@ -1181,21 +1137,19 @@ function servicesPage() {
 
         // Called when user clicks "احجز هذه الباقة"
         handleBookPkg(pkg) {
-            if (!pkg) pkg = this.det?.packages?.[0] || null;
-            this.selPkg = pkg;
+    if (!pkg) pkg = this.det?.packages?.[0] || null;
+    this.selPkg = pkg;
 
-            const isMobile = window.innerWidth < 768;
-            if (isMobile) {
-                // redirect to booking page with params
-                const params = new URLSearchParams();
-                if (this.selSvc) params.set('service', this.selSvc);
-                if (pkg?.id) params.set('package', pkg.id);
-                window.location.href = this.bookingBase + '?' + params.toString();
-            } else {
-                // open drawer
-                this.openDrawer(pkg);
-            }
-        },
+    const isMobile = window.innerWidth < 768;
+    if (isMobile) {
+        const params = new URLSearchParams();
+        if (this.selSvc) params.set('service', this.selSvc);
+        if (pkg?.id) params.set('package', pkg.id);
+        window.location.href = this.bookingBase + '?' + params.toString();
+    } else {
+        this.openDrawerForPkg(pkg);  // ← هنا الإصلاح
+    }
+},
 
         openDrawer(pkg) {
             this.qbPkg = pkg || this.selPkg;
@@ -1206,10 +1160,7 @@ function servicesPage() {
             document.body.style.overflow = 'hidden';
         },
 
-        closeDrawer() {
-            this.drawerOpen = false;
-            document.body.style.overflow = '';
-        },
+        
 
         async submitQuickBook() {
             const phoneRx = /^0[5-7]\d{8}$/;
@@ -1287,10 +1238,11 @@ function servicesPage() {
             } catch(e) {}
         },
 
-        closeDrawer() {
-            this.drawerOpen = false;
-            this.qbStep = 1;
-        },
+closeDrawer() {
+    this.drawerOpen = false;
+    this.qbStep = 1;
+    document.body.style.overflow = '';
+},
 
         async checkAvailability() {
             if (!this.qbForm.event_date || !this.det) return;
