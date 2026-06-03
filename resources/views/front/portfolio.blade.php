@@ -20,7 +20,7 @@
             }
             $heroImage ??= asset('img/events.jpg');
         @endphp
-        <img src="{{ $heroImage }}" alt="ONX Portfolio" class="h-full w-full object-cover opacity-20">
+        <img loading="eager" src="{{ $heroImage }}" alt="ONX Portfolio" class="h-full w-full object-cover opacity-20">
         <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/80 to-[#050505]"></div>
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,106,0,0.14),transparent_28%),radial-gradient(circle_at_20%_80%,rgba(255,106,0,0.06),transparent_26%)]"></div>
     </div>
@@ -47,7 +47,7 @@
             <div class="relative mx-auto max-w-lg">
                 <div class="absolute -inset-8 rounded-[38px] bg-orange-500/10 blur-3xl"></div>
                 <div class="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/5 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <img src="{{ $heroImage }}" alt="ONX Portfolio" class="h-[320px] w-full object-cover opacity-95 lg:h-[400px]">
+                    <img loading="eager" src="{{ $heroImage }}" alt="ONX Portfolio" class="h-[320px] w-full object-cover opacity-95 lg:h-[400px]">
                     <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
                     <div class="absolute left-0 right-0 top-0 flex items-start justify-between p-3.5">
                         <div class="inline-flex rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.18em] text-white/70 backdrop-blur">ONX FRAME</div>
@@ -88,7 +88,7 @@ if ($reel->image_path) {
                 style="scroll-snap-align: start; width: calc(50% - 8px);"
                 data-reel-source="{{ $reel->reel_source }}"
                 data-video-path="{{ $reel->reel_source === 'mp4' && $reel->video_path ? asset($reel->video_path) : '' }}"
-                data-youtube-id="{{ $reel->youtube_video_id ?? \App\Models\Content\PortfolioItem::extractYoutubeVideoId($reel->reel_url) ?? '' }}"
+                data-youtube-id="{{ $reel->youtube_video_id ?? '' }}"
                 data-title="{{ e($reel->title) }}"
                 data-caption="{{ e($reel->caption ?? '') }}"
                 data-cat="{{ $catName }}"
@@ -96,7 +96,7 @@ if ($reel->image_path) {
                 <div class="relative w-full" style="padding-top:177.78%">
                     <div class="absolute inset-0">
                         @if($thumb)
-                            <img src="{{ $thumb }}" alt="{{ $reel->title }}"
+                            <img loading="lazy" src="{{ $thumb }}" alt="{{ $reel->title }}"
                                  class="h-full w-full object-cover transition duration-700 group-hover:scale-110">
                         @else
                             <div class="h-full w-full bg-white/5 flex items-center justify-center text-xs font-bold text-white/40">لا توجد صورة</div>
@@ -156,7 +156,7 @@ if ($reel->image_path) {
                 <button type="button" class="portfolio-open-btn block w-full text-right">
                     <div class="relative h-[320px] w-full overflow-hidden">
                         @if($coverImage)
-                            <img src="{{ $coverImage }}" alt="{{ $item->title }}" class="h-full w-full object-cover transition duration-700 grayscale group-hover:grayscale-0 group-hover:scale-110">
+                            <img loading="lazy" src="{{ $coverImage }}" alt="{{ $item->title }}" class="h-full w-full object-cover transition duration-700 grayscale group-hover:grayscale-0 group-hover:scale-110">
                         @else
                             <div class="flex h-full w-full items-center justify-center bg-white/5 text-xs font-bold text-white/40">لا توجد صورة</div>
                         @endif
@@ -227,7 +227,7 @@ if ($reel->image_path) {
                     <button type="button" class="portfolio-open-btn block w-full text-right">
                         <div class="relative h-[320px] w-full overflow-hidden">
                             @if($coverImage)
-                                <img src="{{ $coverImage }}" alt="{{ $item->title }}" class="h-full w-full object-cover transition duration-700 group-hover:grayscale-0 group-hover:scale-110">
+                                <img loading="lazy" src="{{ $coverImage }}" alt="{{ $item->title }}" class="h-full w-full object-cover transition duration-700 group-hover:grayscale-0 group-hover:scale-110">
                             @else
                                 <div class="flex h-full w-full items-center justify-center bg-white/5 text-xs font-bold text-white/40">لا توجد صورة</div>
                             @endif
@@ -504,7 +504,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (image) {
             viewerType.classList.add('hidden');
-            return '<img src="' + image + '" alt="' + (data.title || '') + '" class="max-h-[80vh] w-full object-contain">';
+            return '<img loading="lazy" src="' + image + '" alt="' + (data.title || '') + '" class="max-h-[80vh] w-full object-contain">';
         }
 
         return '<div class="text-white/40 text-sm p-8">لا توجد معاينة</div>';

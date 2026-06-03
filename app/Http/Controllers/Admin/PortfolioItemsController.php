@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\ImageManager;
+use Intervention\Image\Drivers\Gd\Driver;
 
 class PortfolioItemsController extends Controller
 {
@@ -106,9 +108,9 @@ class PortfolioItemsController extends Controller
 
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
-            $ext  = $request->file('image')->getClientOriginalExtension();
+            $ext  = 'jpg';
             $name = 'ONX' . date('Y') . '_' . Str::random(4) . '.' . $ext;
-            $path = $request->file('image')->storeAs('portfolio', $name, 'public');
+            $path = self::compressAndSave($request->file('image'), 'portfolio', $name);
             $data['image_path'] = 'storage/' . $path;
         }
 
@@ -124,6 +126,10 @@ class PortfolioItemsController extends Controller
 
         // FIX #6: امسح cache التصنيفات عند إضافة عمل جديد
         Cache::forget('portfolio_categories');
+        Cache::forget('portfolio_items');
+        Cache::forget('portfolio_featured');
+        Cache::forget('portfolio_featured_fallback');
+        Cache::forget('portfolio_reels');
 
         return redirect()
             ->route('admin.portfolio-items.index', ['category_id' => $categoryId])
@@ -215,9 +221,9 @@ class PortfolioItemsController extends Controller
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
             self::deleteStoredFile($portfolioItem->image_path);
-            $ext  = $request->file('image')->getClientOriginalExtension();
+            $ext  = 'jpg';
             $name = 'ONX' . date('Y') . '_' . Str::random(4) . '.' . $ext;
-            $path = $request->file('image')->storeAs('portfolio', $name, 'public');
+            $path = self::compressAndSave($request->file('image'), 'portfolio', $name);
             $data['image_path'] = 'storage/' . $path;
         }
 
@@ -249,6 +255,10 @@ if ($isReel && $portfolioItem->reel_source === 'youtube' && !$request->filled('r
 
         // FIX #6: امسح cache التصنيفات عند تحديث عمل
         Cache::forget('portfolio_categories');
+        Cache::forget('portfolio_items');
+        Cache::forget('portfolio_featured');
+        Cache::forget('portfolio_featured_fallback');
+        Cache::forget('portfolio_reels');
 
         return redirect()
             ->route('admin.portfolio-items.index', ['category_id' => $categoryId])
@@ -263,10 +273,30 @@ if ($isReel && $portfolioItem->reel_source === 'youtube' && !$request->filled('r
         $portfolioItem->delete();
 
         Cache::forget('portfolio_categories');
+        Cache::forget('portfolio_items');
+        Cache::forget('portfolio_featured');
+        Cache::forget('portfolio_featured_fallback');
+        Cache::forget('portfolio_reels');
 
         return redirect()
             ->route('admin.portfolio-items.index', ['category_id' => $categoryId])
             ->with('message', 'تم حذف العمل بنجاح.');
+    }
+
+    private static function compressAndSave(\Illuminate\Http\UploadedFile $file, string $folder, string $name): string
+    {
+        $manager = new ImageManager(new Driver());
+        $image   = $manager->read($file->getRealPath());
+
+        // resize if wider than 1920px
+        if ($image->width() > 1920) {
+            $image->scaleDown(width: 1920);
+        }
+
+        $savePath = storage_path('app/public/' . $folder . '/' . $name);
+        $image->toJpeg(85)->save($savePath);
+
+        return $folder . '/' . $name;
     }
 
     private static function deleteStoredFile(?string $publicRelative): void
