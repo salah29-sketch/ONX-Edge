@@ -99,6 +99,11 @@ class PortfolioItemsController extends Controller
             $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($request->reel_url);
         }
 
+        // استخراج youtube_video_id لنوع youtube العادي
+        if ($request->input('media_type') === 'youtube' && $request->filled('youtube_url')) {
+            $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($request->youtube_url);
+        }
+
         // حفظ الصورة — لكل أنواع الوسائط (صورة + ريل)
         if ($request->hasFile('image')) {
             $ext  = $request->file('image')->getClientOriginalExtension();
@@ -198,6 +203,12 @@ class PortfolioItemsController extends Controller
         if ($isReel && $request->reel_source === 'youtube' && $request->filled('reel_url')) {
             $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($request->reel_url);
         } elseif (!$isReel) {
+        }
+
+        // استخراج youtube_video_id لنوع youtube العادي
+        if ($request->input('media_type') === 'youtube' && $request->filled('youtube_url')) {
+            $data['youtube_video_id'] = PortfolioItem::extractYoutubeVideoId($request->youtube_url);
+        }
     $data['youtube_video_id'] = null;
 }
 

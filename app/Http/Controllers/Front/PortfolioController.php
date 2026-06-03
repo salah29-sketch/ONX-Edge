@@ -18,7 +18,7 @@ class PortfolioController extends Controller
                 ->get(['id', 'name', 'slug', 'icon'])
         );
 
-        // ── Hero: أولوية للصور، fallback لـ YouTube thumbnail
+        // ── Hero
         $heroItem = PortfolioItem::where('is_active', true)
             ->where(function ($q) {
                 $q->where(function ($q2) {
@@ -30,37 +30,46 @@ class PortfolioController extends Controller
             ->inRandomOrder()
             ->first();
 
-        // ── Featured: اعتمد على is_featured أولًا، ثم آخر الأعمال
-        $featuredItems = PortfolioItem::where('is_active', true)
-            ->where('is_featured', true)
-            ->where('is_reel', false)
-            ->with('categoryRelation:id,name,slug')
-            ->orderBy('sort_order')
-            ->limit(3)
-            ->get();
-
-        if ($featuredItems->isEmpty()) {
-            $featuredItems = PortfolioItem::where('is_active', true)
+        // ── Featured
+        $featuredItems = Cache::remember('portfolio_featured', 300, fn () =>
+            PortfolioItem::where('is_active', true)
+                ->where('is_featured', true)
                 ->where('is_reel', false)
                 ->with('categoryRelation:id,name,slug')
-                ->orderByDesc('id')
+                ->orderBy('sort_order')
                 ->limit(3)
-                ->get();
+                ->get()
+        );
+        if ($featuredItems->isEmpty()) {
+            $featuredItems = Cache::remember('portfolio_featured_fallback', 300, fn () =>
+                PortfolioItem::where('is_active', true)
+                    ->where('is_reel', false)
+                    ->with('categoryRelation:id,name,slug')
+                    ->orderByDesc('id')
+                    ->limit(3)
+                    ->get()
+            );
         }
 
-        $reelItems = PortfolioItem::where('is_active', true)
-            ->where('is_reel', true)
-            ->with('categoryRelation:id,name,slug,icon')
-            ->orderBy('sort_order')
-            ->get();
+        // ── Reels
+        $reelItems = Cache::remember('portfolio_reels', 300, fn () =>
+            PortfolioItem::where('is_active', true)
+                ->where('is_reel', true)
+                ->with('categoryRelation:id,name,slug,icon')
+                ->orderBy('sort_order')
+                ->get()
+        );
 
-        $items = PortfolioItem::where('is_active', true)
-            ->where('is_reel', false)
-            ->with('categoryRelation:id,name,slug')
-            ->orderByDesc('is_featured')
-            ->orderBy('sort_order')
-            ->orderByDesc('id')
-            ->get();
+        // ── All items
+        $items = Cache::remember('portfolio_items', 300, fn () =>
+            PortfolioItem::where('is_active', true)
+                ->where('is_reel', false)
+                ->with('categoryRelation:id,name,slug')
+                ->orderByDesc('is_featured')
+                ->orderBy('sort_order')
+                ->orderByDesc('id')
+                ->get()
+        );
 
         return view('front.portfolio', [
             'items'         => $items,
