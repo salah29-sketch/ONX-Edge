@@ -714,11 +714,11 @@ html { transition: --onx-brand .4s ease; }
         <!-- الخطوة 1: المعلومات الشخصية -->
         <div class="qb-screen" :class="qbStep===1?'active':''" :class.prev="qbStep>1">
             <div x-show="qbPkg" class="qb-pkg-box">
-                <div class="qb-pkg-left">
-                    <div class="qb-pkg-nm" x-text="qbPkg.name"></div>
+    <div class="qb-pkg-left">
+        <div class="qb-pkg-nm" x-text="qbPkg?.name"></div>
                     <div class="qb-pkg-change" @click="qbStep=0">تغيير الباقة</div>
                 </div>
-                <div class="qb-pkg-pr" x-text="qbPkg.price>0?n(qbPkg.price)+' دج':'حسب الطلب'"></div>
+                <div class="qb-pkg-pr" x-text="qbPkg?.price>0?n(qbPkg.price)+' دج':'حسب الطلب'"></div>
             </div>
             <div class="qb-field">
                 <label class="qb-label">الاسم الكامل *</label>
@@ -1305,8 +1305,8 @@ closeDrawer() {
                 return this.qbForm.name.trim() && emailRegex.test(this.qbForm.email) && phoneRegex.test(this.qbForm.phone);
             }
             if (this.qbStep === 2) {
-                return this.qbForm.event_date && this.qbForm.start_time && this.qbForm.wilaya_id && this.qbForm.venue_id;
-            }
+    return this.qbForm.event_date && this.qbForm.start_time;
+}
             return true;
         },
 
