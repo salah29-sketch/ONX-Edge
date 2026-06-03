@@ -235,97 +235,6 @@ html { transition: --onx-brand .4s ease; }
 /* hide drawer on mobile */
 @media(max-width:767px){.qb-drawer,.qb-backdrop{display:none!important;}}
 
-/* ══ QUICK BOOKING DRAWER (3-step multi-screen) ══ */
-.qb-backdrop{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);}
-.qb-drawer{position:fixed;top:0;left:0;bottom:0;z-index:61;width:420px;max-width:100vw;background:#0d0d0d;border-right:1px solid rgba(var(--onx-brand-rgb),.2);box-shadow:4px 0 40px rgba(0,0,0,.6);display:flex;flex-direction:column;transform:translateX(-100%);transition:transform .38s cubic-bezier(.4,0,.2,1);}
-.qb-drawer.open{transform:translateX(0);}
-
-/* خط التقدم */
-.qb-progress{display:flex;gap:6px;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08);}
-.qb-step{flex:1;height:4px;background:rgba(255,255,255,.1);border-radius:2px;transition:all .3s;}
-.qb-step.active{background:var(--onx-brand);box-shadow:0 0 8px rgba(var(--onx-brand-rgb),.4);}
-.qb-step.done{background:var(--onx-brand);}
-
-/* شاشات الخطوات */
-.qb-screens{position:relative;flex:1;overflow:hidden;}
-.qb-screen{position:absolute;inset:0;opacity:0;pointer-events:none;transition:all .35s cubic-bezier(.4,0,.2,1);transform:translateX(100%);overflow-y:auto;}
-.qb-screen.active{opacity:1;pointer-events:auto;transform:translateX(0);}
-.qb-screen.prev{transform:translateX(-100%);}
-.qb-screen{padding:20px 16px;}
-
-.qb-head{padding:14px 16px 0;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:space-between;}
-.qb-close-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.5);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0;}
-.qb-close-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
-.qb-head-nav{display:flex;align-items:center;gap:8px;flex:1;}
-.qb-back-btn{background:transparent;border:none;color:rgba(255,255,255,.5);cursor:pointer;padding:4px 8px;font-size:16px;transition:.2s;}
-.qb-back-btn:hover{color:#fff;}
-.qb-title{font-size:14px;font-weight:900;color:#fff;}
-
-.qb-field{margin-bottom:14px;}
-.qb-label{font-size:10px;font-weight:800;color:rgba(255,255,255,.6);margin-bottom:6px;display:block;text-transform:uppercase;letter-spacing:.06em;}
-.qb-input{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;font-size:13px;color:#fff;outline:none;font-family:inherit;transition:.2s;}
-.qb-input:focus{border-color:rgba(var(--onx-brand-rgb),.5);box-shadow:0 0 0 3px rgba(var(--onx-brand-rgb),.1);}
-.qb-input::placeholder{color:rgba(255,255,255,.2);}
-.qb-select{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 14px;font-size:13px;color:#fff;outline:none;font-family:inherit;transition:.2s;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,.5)' d='M1 4l5 5 5-5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px;}
-.qb-select:focus{border-color:rgba(var(--onx-brand-rgb),.5);}
-.qb-select option{background:#1a1a1a;color:#fff;}
-
-/* الباقة المختارة */
-.qb-pkg-box{background:rgba(var(--onx-brand-rgb),.08);border:1px solid rgba(var(--onx-brand-rgb),.25);border-radius:12px;padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
-.qb-pkg-left{flex:1;}
-.qb-pkg-nm{font-size:13px;font-weight:800;color:#fff;margin-bottom:3px;}
-.qb-pkg-change{font-size:10px;color:rgba(var(--onx-brand-rgb),.6);cursor:pointer;text-decoration:underline;}
-.qb-pkg-pr{font-size:15px;font-weight:900;color:var(--onx-brand);}
-
-/* الإتاحة */
-.qb-avail{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;padding:4px 10px;border-radius:6px;margin-top:6px;}
-.qb-avail.available{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);color:#4ade80;}
-.qb-avail.booked{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;}
-
-/* ملخص الحجز */
-.qb-summary-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:12px;}
-.qb-summary-row:last-child{border:none;}
-.qb-summary-label{color:rgba(255,255,255,.5);}
-.qb-summary-value{color:#fff;font-weight:700;}
-.qb-summary-total{padding:12px 0;border-top:1px solid rgba(255,255,255,.1);margin-top:8px;font-size:18px;font-weight:900;color:var(--onx-brand);}
-.qb-summary-old{color:rgba(255,255,255,.3);text-decoration:line-through;font-size:12px;}
-
-/* كود الخصم */
-.qb-promo{margin:14px 0;padding:12px;background:rgba(var(--onx-brand-rgb),.06);border:1px solid rgba(var(--onx-brand-rgb),.15);border-radius:10px;}
-.qb-promo-label{font-size:10px;font-weight:700;color:rgba(255,255,255,.5);margin-bottom:6px;text-transform:uppercase;}
-.qb-promo-field{display:flex;gap:6px;}
-.qb-promo-input{flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:8px 12px;font-size:12px;color:#fff;font-family:inherit;text-transform:uppercase;text-align:center;}
-.qb-promo-input:focus{border-color:rgba(var(--onx-brand-rgb),.4);}
-.qb-promo-btn{background:rgba(var(--onx-brand-rgb),.15);border:1px solid rgba(var(--onx-brand-rgb),.3);border-radius:8px;padding:8px 14px;font-size:11px;font-weight:700;color:var(--onx-brand);cursor:pointer;transition:.2s;}
-.qb-promo-btn:hover{background:rgba(var(--onx-brand-rgb),.25);}
-.qb-promo-msg{margin-top:6px;font-size:10px;padding:5px 8px;border-radius:6px;}
-.qb-promo-msg.ok{background:rgba(34,197,94,.12);color:#4ade80;border:1px solid rgba(34,197,94,.2);}
-.qb-promo-msg.err{background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.2);}
-
-/* الأزرار */
-.qb-foot{padding:14px 16px;border-top:1px solid rgba(255,255,255,.07);flex-shrink:0;display:flex;gap:8px;}
-.qb-btn-prev{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.7);border-radius:10px;padding:11px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.2s;}
-.qb-btn-prev:hover{background:rgba(255,255,255,.1);}
-.qb-btn-next{flex:1;background:var(--onx-brand);border:none;color:#000;border-radius:10px;padding:11px;font-size:12px;font-weight:900;cursor:pointer;font-family:inherit;transition:.2s;box-shadow:0 4px 16px rgba(var(--onx-brand-rgb),.25);}
-.qb-btn-next:hover{filter:brightness(1.1);}
-.qb-btn-next:disabled{opacity:.5;cursor:not-allowed;}
-
-/* شاشة النجاح */
-.qb-success-screen{text-align:center;padding:40px 20px;}
-.qb-success-icon{width:64px;height:64px;margin:0 auto 16px;border-radius:50%;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;font-size:28px;color:#4ade80;}
-.qb-success-title{font-size:16px;font-weight:900;color:#fff;margin-bottom:6px;}
-.qb-success-ref{display:inline-block;background:rgba(var(--onx-brand-rgb),.1);border:1px solid rgba(var(--onx-brand-rgb),.25);color:var(--onx-brand);font-weight:900;font-size:14px;padding:6px 16px;border-radius:99px;margin:8px 0;}
-.qb-login-box{background:rgba(var(--onx-brand-rgb),.08);border:1px solid rgba(var(--onx-brand-rgb),.2);border-radius:12px;padding:12px;margin:16px 0;text-align:left;}
-.qb-login-row{font-size:11px;margin-bottom:8px;color:#fff;}
-.qb-login-row strong{display:block;color:var(--onx-brand);font-family:monospace;font-size:12px;margin-top:3px;}
-.qb-login-row:last-child{margin-bottom:0;}
-.qb-success-btns{display:flex;flex-direction:column;gap:8px;margin-top:16px;}
-.qb-success-btns a{display:block;text-align:center;padding:10px;font-size:12px;font-weight:700;border-radius:10px;text-decoration:none;transition:.2s;}
-.qb-success-btns .btn-pdf{background:var(--onx-brand);color:#000;}
-.qb-success-btns .btn-pdf:hover{filter:brightness(1.1);}
-.qb-success-btns .btn-home{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.1);}
-.qb-success-btns .btn-home:hover{background:rgba(255,255,255,.12);}
-
 </style>
 
 </head>
@@ -680,172 +589,10 @@ html { transition: --onx-brand .4s ease; }
 </div>
 
 
-
-
-<!-- ════════════════════════════════════════════════════════════════
-     QUICK BOOKING DRAWER — 3 خطوات في الجانب الأيسر
-     ════════════════════════════════════════════════════════════════ -->
-
-<!-- Backdrop -->
-<div x-show="drawerOpen" x-cloak class="qb-backdrop" @click="closeDrawer()"></div>
-
-<!-- الـ Drawer نفسه -->
-<div class="qb-drawer" :class="drawerOpen?'open':''">
-    
-    <!-- خط التقدم -->
-<div class="qb-progress">
-    <div class="qb-step" :class="qbStep===1?'active':qbStep>1?'done':''"></div>
-    <div class="qb-step" :class="qbStep===2?'active':qbStep>2?'done':''"></div>
-    <div class="qb-step" :class="qbStep===3?'active':qbStep>3?'done':''"></div>
-</div>
-
-    <!-- الـ Header مع الأزرار -->
-    <div class="qb-head">
-        <div class="qb-head-nav">
-            <button x-show="qbStep>1" type="button" class="qb-back-btn" @click="qbStep--">←</button>
-            <div class="qb-title" x-text="qbStep===1?'معلوماتك':qbStep===2?'الفعالية':qbStep===3?'ملخص الحجز':'النجاح'"></div>
-        </div>
-        <button type="button" class="qb-close-btn" @click="closeDrawer()">✕</button>
-    </div>
-
-    <!-- شاشات الخطوات -->
-    <div class="qb-screens">
-        
-        <!-- الخطوة 1: المعلومات الشخصية -->
-        <div class="qb-screen" :class="qbStep===1?'active':''" :class.prev="qbStep>1">
-            <div x-show="qbPkg" class="qb-pkg-box">
-    <div class="qb-pkg-left">
-        <div class="qb-pkg-nm" x-text="qbPkg?.name"></div>
-                    <div class="qb-pkg-change" @click="qbStep=0">تغيير الباقة</div>
-                </div>
-                <div class="qb-pkg-pr" x-text="qbPkg?.price>0?n(qbPkg.price)+' دج':'حسب الطلب'"></div>
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">الاسم الكامل *</label>
-                <input type="text" x-model="qbForm.name" class="qb-input" placeholder="اسمك الكامل">
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">رقم الهاتف *</label>
-                <input type="tel" x-model="qbForm.phone" class="qb-input" placeholder="0550000000" dir="ltr">
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">البريد الإلكتروني *</label>
-                <input type="email" x-model="qbForm.email" class="qb-input" placeholder="email@example.com" dir="ltr">
-            </div>
-        </div>
-
-        <!-- الخطوة 2: تفاصيل الفعالية -->
-        <div class="qb-screen" :class="qbStep===2?'active':''" :class.prev="qbStep>2">
-            <div class="qb-field">
-                <label class="qb-label">تاريخ الحفل *</label>
-                <input type="date" x-model="qbForm.event_date" @change="checkAvailability()" class="qb-input" dir="ltr">
-                <div x-show="qbForm.event_date && qbAvailability" class="qb-avail" :class="qbAvailability==='available'?'available':'booked'">
-                    <span x-text="qbAvailability==='available'?'✓ متاح':'✗ محجوز'"></span>
-                </div>
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">وقت البداية *</label>
-                <input type="time" x-model="qbForm.start_time" class="qb-input" dir="ltr" value="19:00">
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">الولاية *</label>
-                <select x-model="qbForm.wilaya_id" @change="fetchVenues()" class="qb-select">
-                    <option value="">اختر الولاية...</option>
-                    <template x-for="w in qbWilayas" :key="w.id">
-                        <option :value="w.id" x-text="w.code+' — '+w.name"></option>
-                    </template>
-                </select>
-            </div>
-            <div class="qb-field">
-                <label class="qb-label">قاعة الحفل *</label>
-                <select x-model="qbForm.venue_id" class="qb-select">
-                    <option value="">اختر القاعة...</option>
-                    <template x-for="v in qbVenues" :key="v.id">
-                        <option :value="v.id" x-text="v.name"></option>
-                    </template>
-                </select>
-            </div>
-        </div>
-
-        <!-- الخطوة 3: الملخص والتأكيد -->
-        <div class="qb-screen" :class="qbStep===3?'active':''" :class.prev="qbStep>3">
-            <div style="margin-bottom:16px;">
-                <div class="qb-summary-row">
-                    <span class="qb-summary-label">الخدمة</span>
-                    <span class="qb-summary-value" x-text="det?.name||'—'"></span>
-                </div>
-                <div class="qb-summary-row">
-                    <span class="qb-summary-label">الباقة</span>
-                    <span class="qb-summary-value" x-text="qbPkg?.name||'—'"></span>
-                </div>
-                <div class="qb-summary-row">
-                    <span class="qb-summary-label">التاريخ</span>
-                    <span class="qb-summary-value" x-text="qbForm.event_date||'—'"></span>
-                </div>
-                <div class="qb-summary-row">
-                    <span class="qb-summary-label">الوقت</span>
-                    <span class="qb-summary-value" x-text="qbForm.start_time||'—'"></span>
-                </div>
-            </div>
-            <div style="margin-bottom:12px;padding:12px 0;border-top:1px solid rgba(255,255,255,.1);">
-                <div x-show="qbPricingOld>0 && qbPricingOld>qbPricing" style="display:flex;justify-content:space-between;margin-bottom:6px;">
-                    <span style="color:rgba(255,255,255,.4);font-size:12px;">السعر الأصلي</span>
-                    <span class="qb-summary-old" x-text="n(qbPricingOld)+' دج'"></span>
-                </div>
-                <div class="qb-summary-total">
-                    <span x-text="n(qbPricing)+' دج'"></span>
-                </div>
-            </div>
-            <div class="qb-promo">
-                <div class="qb-promo-label">كود التخفيض (اختياري)</div>
-                <div class="qb-promo-field">
-                    <input type="text" x-model="qbForm.promo_code" @keyup.enter="applyPromoQB()" class="qb-promo-input" placeholder="أدخل الكود" dir="ltr" :disabled="qbPromoApplied">
-                    <button type="button" @click="qbPromoApplied?resetPromoQB():applyPromoQB()" :disabled="qbPromoLoading" class="qb-promo-btn" x-text="qbPromoApplied?'إلغاء':'تطبيق'"></button>
-                </div>
-                <div x-show="qbPromoMsg" class="qb-promo-msg" :class="qbPromoApplied?'ok':'err'" x-text="qbPromoMsg"></div>
-                <div x-show="qbPromoApplied && qbPromoDiscount>0" style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2);border-radius:6px;">
-                    <span style="font-size:11px;color:#4ade80;font-weight:700;">🎉 خصم مطبّق</span>
-                    <span style="font-size:13px;font-weight:900;color:#4ade80;" x-text="'- '+n(qbPromoDiscount)+' دج'"></span>
-                </div>
-            </div>
-            <div style="margin-top:12px;padding:12px;background:rgba(var(--onx-brand-rgb),.08);border:1px solid rgba(var(--onx-brand-rgb),.2);border-radius:10px;text-align:center;">
-                <div style="font-size:11px;color:rgba(var(--onx-brand-rgb),.6);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;">السعر النهائي</div>
-                <div style="font-size:22px;font-weight:900;color:var(--onx-brand);" x-text="n(qbPromoApplied?qbPricingFinal:qbPricing)+' دج'"></div>
-            </div>
-        </div>
-
-        <!-- شاشة النجاح -->
-        <div class="qb-screen qb-success-screen" :class="qbStep===4?'active':''">
-            <div class="qb-success-icon">✓</div>
-            <div class="qb-success-title">تم استلام حجزك!</div>
-            <div class="qb-success-ref" x-text="'#'+qbBookingRef"></div>
-            <div x-show="qbClientLogin" class="qb-login-box">
-                <div class="qb-login-row">
-                    <strong>اسم المستخدم / البريد:</strong>
-                    <strong x-text="qbClientLogin"></strong>
-                </div>
-                <div class="qb-login-row">
-                    <strong>كلمة المرور:</strong>
-                    <strong x-text="qbClientPassword||'— تواصل معنا'"></strong>
-                </div>
-            </div>
-            <div class="qb-success-btns">
-                <a :href="'/booking/pdf/'+qbBookingId" target="_blank" class="btn-pdf">📄 تحميل PDF</a>
-                <a href="/" class="btn-home">← العودة للرئيسية</a>
-            </div>
-        </div>
-    </div>
-
-    <!-- الأزرار السفلية -->
-    <div class="qb-foot" x-show="qbStep<4">
-        <button x-show="qbStep>1" type="button" class="qb-btn-prev" @click="qbStep--">السابق</button>
-        <button type="button" class="qb-btn-next" @click="qbNextStep()" :disabled="!qbCanProceed()">
-            <span x-text="qbStep===3?'تأكيد الحجز':'التالي'"></span>
-        </button>
-    </div>
-</div>
+@include('booking-drawer')
 
 </div>
+
     </main>
 
     
@@ -998,36 +745,23 @@ function servicesPage() {
         // الـ drawer بـ 3 خطوات
         // ═════════════════════════════════════════════════════════
         drawerOpen: false,
-        qbStep: 1,                          // 1, 2, 3, 4 (success)
-        qbPkg: null,                        // الباقة المختارة
-        qbDone: false,   // ← أضف هذا
-qbRef: '',       // ← وهذا
-        qbAvailability: null,               // 'available' | 'booked'
-        qbWilayas: [],                      // قائمة الولايات
-        qbVenues: [],                       // قائمة القاعات
-        qbForm: { 
-            name:'', 
-            phone:'', 
-            email:'', 
-            event_date:'', 
-            start_time:'19:00', 
-            wilaya_id:null, 
-            venue_id:null, 
-            promo_code:'' 
-        },
-        qbPricing: 0,                       // السعر الأساسي
-        qbPricingOld: 0,                    // السعر القديم
-        qbPricingFinal: 0,                  // السعر النهائي بعد الخصم
-        qbPromoApplied: false,              // هل تم تطبيق الكود
-        qbPromoMsg: '',                     // رسالة الكود
-        qbPromoDiscount: 0,                 // قيمة الخصم
-        qbPromoLoading: false,              // حالة تحميل الكود
-        qbBusy: false,                      // حالة الإرسال
-        qbErr: '',                          // رسالة الخطأ
-        qbBookingRef: '',                   // رقم الحجز
-        qbBookingId: '',                    // معرّف الحجز
-        qbClientLogin: '',                  // بيانات العميل
-        qbClientPassword: '',
+        qbStep: 1,
+        qbPkg: null,
+        qbAvailability: null,
+        qbWilayas: [],
+        qbVenues: [],
+        qbForm: { name:'', phone:'', email:'', event_date:'', start_time:'19:00', wilaya_id:null, venue_id:null, promo_code:'' },
+        qbPricing: 0,
+        qbPricingOld: 0,
+        qbPricingFinal: 0,
+        qbPromoApplied: false,
+        qbPromoMsg: '',
+        qbPromoDiscount: 0,
+        qbPromoLoading: false,
+        qbBusy: false,
+        qbErr: '',
+        qbBookingRef: '',
+        qbBookingId: '',
 
         bookingBase: "https:\/\/onx-edge.com\/booking",
         waNumber: '213540573518',
@@ -1110,7 +844,6 @@ qbRef: '',       // ← وهذا
                 const pr = await fetch('/api/smart-booking/packages?service_id='+svc.id);
                 const packages = (await pr.json()).filter(p => !p.is_buildable);
                 this.det = {
-                    id: svc.id, 
                     name: svc.name,
                     description: svc.description || '',
                     booking_type: svc.booking_type || 'event',
@@ -1121,7 +854,7 @@ qbRef: '',       // ← وهذا
                 };
                 this.selPkg = null;
             } catch(e) {
-                this.det = {id:svc.id, name:svc.name, description:svc.description||'', booking_type:'event', packages:[], portfolio:[], testimonials:[], stats:{projects:'50+',delivery:'أسبوع'} };
+                this.det = { name:svc.name, description:svc.description||'', booking_type:'event', packages:[], portfolio:[], testimonials:[], stats:{projects:'50+',delivery:'أسبوع'} };
             }
             this.loadingDet = false;
         },
@@ -1137,30 +870,21 @@ qbRef: '',       // ← وهذا
 
         // Called when user clicks "احجز هذه الباقة"
         handleBookPkg(pkg) {
-    if (!pkg) pkg = this.det?.packages?.[0] || null;
-    this.selPkg = pkg;
+            if (!pkg) pkg = this.det?.packages?.[0] || null;
+            if (!pkg) return;
 
-    const isMobile = window.innerWidth < 768;
-    if (isMobile) {
-        const params = new URLSearchParams();
-        if (this.selSvc) params.set('service', this.selSvc);
-        if (pkg?.id) params.set('package', pkg.id);
-        window.location.href = this.bookingBase + '?' + params.toString();
-    } else {
-        this.openDrawerForPkg(pkg);  // ← هنا الإصلاح
-    }
-},
-
-        openDrawer(pkg) {
-            this.qbPkg = pkg || this.selPkg;
-            this.qbDone = false;
-            this.qbErr = '';
-            this.qbForm = { name:'', phone:'', email:'', notes:'', event_date:'' };
-            this.drawerOpen = true;
-            document.body.style.overflow = 'hidden';
+            const isMobile = window.innerWidth < 768;
+            if (isMobile) {
+                // redirect to booking page with params
+                const params = new URLSearchParams();
+                if (this.det?.id) params.set('service', this.det.id);
+                if (pkg?.id) params.set('package', pkg.id);
+                window.location.href = this.bookingBase + '?' + params.toString();
+            } else {
+                // open 3-step drawer
+                this.openDrawerForPkg(pkg);
+            }
         },
-
-        
 
         async submitQuickBook() {
             const phoneRx = /^0[5-7]\d{8}$/;
@@ -1214,10 +938,7 @@ qbRef: '',       // ← وهذا
 
         n(v) { return Number(v||0).toLocaleString('ar-DZ'); },
 
-        // ══════════════════════════════════════════════════════════
-        // الـ DRAWER بـ 3 خطوات
-        // ══════════════════════════════════════════════════════════
-
+        // ══ Drawer functions ══
         async openDrawerForPkg(pkg) {
             if (!this.det) return;
             this.qbPkg = pkg;
@@ -1230,7 +951,6 @@ qbRef: '',       // ← وهذا
             this.qbPricingOld = pkg.old_price || 0;
             this.qbPricingFinal = this.qbPricing;
             this.drawerOpen = true;
-            // جلب الولايات
             try {
                 const r = await fetch('/api/smart-booking/init');
                 const d = await r.json();
@@ -1238,16 +958,15 @@ qbRef: '',       // ← وهذا
             } catch(e) {}
         },
 
-closeDrawer() {
-    this.drawerOpen = false;
-    this.qbStep = 1;
-    document.body.style.overflow = '';
-},
+        closeDrawer() {
+            this.drawerOpen = false;
+            this.qbStep = 1;
+        },
 
         async checkAvailability() {
             if (!this.qbForm.event_date || !this.det) return;
             try {
-                const r = await fetch('/api/smart-booking/availability?date=' + this.qbForm.event_date + '&service_id=' + this.det.id);
+                const r = await fetch('/api/smart-booking/availability?date=' + this.qbForm.event_date + '&service_id=' + this.selSvc);
                 const d = await r.json();
                 this.qbAvailability = d.status;
             } catch(e) {}
@@ -1268,10 +987,7 @@ closeDrawer() {
             try {
                 const r = await fetch('/api/smart-booking/promo', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
                     body: JSON.stringify({ code, total: this.qbPricing })
                 });
                 const d = await r.json();
@@ -1280,22 +996,11 @@ closeDrawer() {
                     this.qbPromoDiscount = d.discount || 0;
                     this.qbPricingFinal = d.final || Math.max(0, this.qbPricing - this.qbPromoDiscount);
                     this.qbPromoMsg = '✓ تم تطبيق الخصم';
-                    this.qbForm.promo_code = code;
                 } else {
                     this.qbPromoMsg = d.message || 'كود غير صالح';
                 }
-            } catch(e) {
-                this.qbPromoMsg = 'خطأ في التحقق';
-            }
+            } catch(e) { this.qbPromoMsg = 'خطأ'; }
             this.qbPromoLoading = false;
-        },
-
-        resetPromoQB() {
-            this.qbPromoApplied = false;
-            this.qbPromoMsg = '';
-            this.qbPromoDiscount = 0;
-            this.qbPricingFinal = this.qbPricing;
-            this.qbForm.promo_code = '';
         },
 
         qbCanProceed() {
@@ -1305,20 +1010,15 @@ closeDrawer() {
                 return this.qbForm.name.trim() && emailRegex.test(this.qbForm.email) && phoneRegex.test(this.qbForm.phone);
             }
             if (this.qbStep === 2) {
-    return this.qbForm.event_date && this.qbForm.start_time;
-}
+                return this.qbForm.event_date && this.qbForm.start_time && this.qbForm.wilaya_id && this.qbForm.venue_id;
+            }
             return true;
         },
 
         async qbNextStep() {
             if (!this.qbCanProceed()) return;
-            
-            if (this.qbStep === 3) {
-                // الحجز النهائي
-                await this.qbSubmit();
-            } else {
-                this.qbStep++;
-            }
+            if (this.qbStep === 3) await this.qbSubmit();
+            else this.qbStep++;
         },
 
         async qbSubmit() {
@@ -1326,15 +1026,12 @@ closeDrawer() {
             try {
                 const r = await fetch('/api/smart-booking/submit', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content },
                     body: JSON.stringify({
                         name: this.qbForm.name,
                         phone: this.qbForm.phone,
                         email: this.qbForm.email,
-                        service_id: this.det.id,
+                        service_id: this.selSvc,
                         package_id: this.qbPkg.id,
                         event_date: this.qbForm.event_date,
                         start_time: this.qbForm.start_time,
@@ -1347,15 +1044,11 @@ closeDrawer() {
                 if (d.success) {
                     this.qbBookingRef = d.booking_ref || d.booking_id || '';
                     this.qbBookingId = d.booking_id || '';
-                    this.qbClientLogin = d.client_login || '';
-                    this.qbClientPassword = d.client_password || '';
                     this.qbStep = 4;
                 } else {
-                    this.qbErr = d.error||Object.values(d.errors||{}).flat().join(' — ')||'حدث خطأ، حاول مرة أخرى';
+                    this.qbErr = d.error||Object.values(d.errors||{}).flat().join(' — ')||'خطأ';
                 }
-            } catch(e) { 
-                this.qbErr='فشل الإرسال. تحقق من الاتصال وحاول مرة أخرى.'; 
-            }
+            } catch(e) { this.qbErr='فشل الإرسال'; }
             this.qbBusy = false;
         },
     };
