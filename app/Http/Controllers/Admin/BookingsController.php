@@ -55,7 +55,7 @@ class BookingsController extends Controller
     {
         abort_unless(Gate::allows('booking_show'), 403);
 
-        $booking->load(['client', 'service', 'package', 'photos', 'payments', 'files']);
+        $booking->load(['client', 'service', 'package.serviceItems', 'photos', 'payments', 'files', 'items']);
         $services = Service::orderBy('sort_order')->get();
         $packagesByService = $booking->service_id
             ? Package::where('service_id', $booking->service_id)->orderBy('name')->pluck('name', 'id')
@@ -67,7 +67,17 @@ class BookingsController extends Controller
         }
         $photosPaginated = $booking->photos()->orderBy('id')->paginate(24)->withQueryString();
 
-        return view('admin.bookings.show', compact('booking', 'services', 'packagesByService', 'clientSelectedPhotos', 'photosPaginated'));
+        // العناصر المتاحة كإضافات (لها addon_price وليست في الباقة)
+        $packageItemIds = $booking->package?->serviceItems->pluck('id')->toArray() ?? [];
+        $addonItems = $booking->service_id
+            ? \App\Models\Service\ServiceItem::where('service_id', $booking->service_id)
+                ->whereNotNull('addon_price')
+                ->where('is_active', true)
+                ->whereNotIn('id', $packageItemIds)
+                ->orderBy('sort_order')
+                ->get()
+            : collect();
+        return view('admin.bookings.show', compact('booking', 'services', 'packagesByService', 'clientSelectedPhotos', 'photosPaginated', 'addonItems'));
     }
 
     public function calendar()
@@ -106,7 +116,9 @@ class BookingsController extends Controller
             'status' => 'nullable|in:' . BookingStatus::validationValues(),
             'total_price' => 'nullable|numeric|min:0',
             'final_price' => 'nullable|numeric|min:0',
-            'package_id' => 'nullable|integer|exists:packages,id',
+            'package_id'     => 'nullable|integer|exists:packages,id',
+            'addon_item_ids' => 'nullable|array',
+            'addon_item_ids.*' => 'integer|exists:service_items,id',
         ];
 
         $serviceSlug = $booking->service?->slug;
@@ -141,6 +153,22 @@ class BookingsController extends Controller
         $eventFields = ['start_time', 'end_time', 'venue_custom'];
         $bookingData = array_diff_key($data, array_flip($eventFields));
         $booking->update($bookingData);
+
+        // حفظ الإضافات المختارة
+        if (!empty($data['addon_item_ids'])) {
+            $items = \App\Models\Service\ServiceItem::whereIn('id', $data['addon_item_ids'])->get();
+            foreach ($items as $item) {
+                $booking->items()->updateOrCreate(
+                    ['item_type' => 'addon', 'item_id' => $item->id],
+                    [
+                        'item_name'   => $item->name,
+                        'quantity'    => 1,
+                        'unit_price'  => $item->addon_price,
+                        'total_price' => $item->addon_price,
+                    ]
+                );
+            }
+        }
 
         if ($hasEventBooking) {
             $eventData = array_filter(

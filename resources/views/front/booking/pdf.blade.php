@@ -190,8 +190,8 @@
     @php
     $pkg = $booking->package;
     if ($pkg) {
-        $pkg->load('serviceItems');
-        $features = $pkg->features;
+        
+        $pkg->load('serviceItems'); $features = $pkg->features;
     } else {
         $features = [];
     }
@@ -199,12 +199,20 @@
     @if(!empty($features))
     <div class="section">
         <p class="section-title">Contenu du forfait — {{ $packageName }}</p>
-        <table class="features-table">
-            @foreach($features as $feature)
+        @php $half = (int) ceil(count($features) / 2); $col1 = array_slice($features, 0, $half); $col2 = array_slice($features, $half); @endphp
+        <table style="width:100%;border-collapse:separate;border-spacing:6px 0;">
             <tr>
-                <td>&#10003; &nbsp;{{ $feature }}</td>
+                <td style="width:50%;vertical-align:top;padding:0;">
+                    <table class="features-table" style="width:100%;"><tbody>
+                    @foreach($col1 as $f)<tr><td>&#10003; {{ $f }}</td></tr>@endforeach
+                    </tbody></table>
+                </td>
+                <td style="width:50%;vertical-align:top;padding:0;">
+                    <table class="features-table" style="width:100%;"><tbody>
+                    @foreach($col2 as $f)<tr><td>&#10003; {{ $f }}</td></tr>@endforeach
+                    </tbody></table>
+                </td>
             </tr>
-            @endforeach
         </table>
     </div>
     @endif

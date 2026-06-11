@@ -243,6 +243,53 @@
 
     </div>{{-- /db-card-body --}}
 </div>{{-- /db-card --}}
+{{-- تفاصيل الباقة --}}
+@if($booking->package)
+<div class="db-card mb-4" x-data="{ openPackage: true, showAddons: false }">
+    <div class="db-card-header db-card-header-toggle flex justify-between items-center"
+         @click="openPackage = !openPackage" role="button" :aria-expanded="openPackage">
+        <span>تفاصيل الباقة: {{ $booking->package->name }}</span>
+        <i class="fas fa-chevron-down db-collapse-icon"></i>
+    </div>
+    <div x-show="openPackage" class="db-card-body">
+        @if($booking->package->serviceItems->isNotEmpty())
+        <div class="flex flex-wrap gap-2 mb-4">
+            @foreach($booking->package->serviceItems as $item)
+            <span class="text-xs px-3 py-1 rounded-full border" style="border-color:var(--card-border);color:var(--tx-primary)">
+                &#10003; {{ $item->name }}{{ $item->pivot->quantity_label ? " (".$item->pivot->quantity_label.")" : "" }}
+            </span>
+            @endforeach
+        </div>
+        @endif
+        @if(isset($addonItems) && $addonItems->isNotEmpty())
+        <div class="pt-3" style="border-top:1px solid var(--card-border)">
+            <button type="button" @click="showAddons = !showAddons"
+                class="text-sm font-bold transition" style="color:var(--onx-orange)">
+                <span x-text="showAddons ? '▲ اخفاء الخدمات الاضافية' : '▼ + خدمات اضافية متاحة'"></span>
+            </button>
+            <div x-show="showAddons" x-cloak x-transition class="mt-3">
+                <div class="flex flex-wrap gap-2 mb-3">
+                    @foreach($addonItems as $addon)
+                    <span class="text-xs px-3 py-1 rounded-full border" style="border-color:rgba(249,115,22,0.3);color:#fb923c">
+                        + {{ $addon->name }} - {{ number_format($addon->addon_price) }} دج
+                    </span>
+                    @endforeach
+                </div>
+                <div x-show="editing" x-cloak>
+                    <select name="addon_item_ids[]" multiple class="db-input text-sm" style="min-height:100px">
+                        @foreach($addonItems as $addon)
+                        <option value="{{ $addon->id }}">{{ $addon->name }} - {{ number_format($addon->addon_price) }} دج</option>
+                        @endforeach
+                    </select>
+                    <small style="color:var(--tx-secondary)">Ctrl+Click لاختيار اكثر من اضافة</small>
+                </div>
+            </div>
+        </div>
+        @endif
+        </div>{{-- /showAddons --}}
+    </div>{{-- /db-card-body --}}
+</div>{{-- /db-card --}}
+@endif
 
 {{-- ─── المدفوعات والملفات ──────────────────────────── --}}
 @include('admin.bookings._payments-files', ['booking' => $booking])
@@ -368,6 +415,8 @@
     </div>
 </div>
 @endif
+
+</div>{{-- /x-data --}}
 
 @endsection
 
@@ -544,5 +593,4 @@ body.booking-lightbox-active { overflow: hidden; }
     });
 })();
 </script>
-</div>{{-- /x-data --}}
 @endsection

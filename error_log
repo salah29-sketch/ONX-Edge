@@ -6,3 +6,5 @@ Stack trace:
 Stack trace:
 #0 {main}
   thrown in Command line code on line 1
+[11-Jun-2026 08:30:17 UTC] PHP Warning:  file_get_contents(/tmp/laravel_app/app/Http/Controllers/Admin/BookingsController.php): Failed to open stream: No such file or directory in /tmp/fix_controller.php on line 3
+[11-Jun-2026 08:30:17 UTC] PHP Warning:  file_put_contents(/tmp/laravel_app/app/Http/Controllers/Admin/BookingsController.php): Failed to open stream: No such file or directory in /tmp/fix_controller.php on line 14

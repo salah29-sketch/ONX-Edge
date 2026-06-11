@@ -293,7 +293,7 @@ class DashboardController extends Controller
     public function invoicePdf(Booking $booking)
 {
     $client = $this->client();
-    if ($booking->client_id !== $client->id) abort(404);
+    if ((int)$booking->client_id !== (int)$client->id) abort(404);
     $booking->load(['payments', 'package', 'eventBooking.venue']);
     $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
         $booking->load(['package']);
@@ -305,7 +305,7 @@ class DashboardController extends Controller
     public function bookingSummary(Booking $booking)
     {
         $client = $this->client();
-        if ($booking->client_id !== $client->id) abort(404);
+        if ((int)$booking->client_id !== (int)$client->id) abort(404);
         $booking->load(['photos', 'payments', 'visibleFiles', 'subscription']);
         $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
         $booking->load(['package']);
@@ -315,7 +315,7 @@ class DashboardController extends Controller
     public function bookingPdf(Booking $booking)
     {
         $client = $this->client();
-        if ($booking->client_id !== $client->id) abort(404);
+        if ((int)$booking->client_id !== (int)$client->id) abort(404);
         $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
         $booking->load(['package']);
         $clientLogin    = $client->email ?: $client->phone;
@@ -477,7 +477,7 @@ class DashboardController extends Controller
     public function projectPhotosBooking(Booking $booking)
     {
         $client = $this->client();
-        if ($booking->client_id !== $client->id) abort(404);
+        if ((int)$booking->client_id !== (int)$client->id) abort(404);
         $photos        = $booking->photos()->orderBy('sort_order')->get();
         $selectedIds   = $client->selectedPhotos()->pluck('booking_photo_id')->toArray();
         $selectedCount = $client->selectedPhotos()->count();
