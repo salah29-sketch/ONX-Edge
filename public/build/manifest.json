@@ -4,7 +4,7 @@
     "name": "module.esm"
   },
   "resources/css/admin.css": {
-    "file": "assets/admin-Cf3pdAEa.css",
+    "file": "assets/admin-Dz9fF_bC.css",
     "src": "resources/css/admin.css",
     "isEntry": true,
     "name": "admin",
@@ -13,7 +13,7 @@
     ]
   },
   "resources/css/app.css": {
-    "file": "assets/app-BPUsjtKA.css",
+    "file": "assets/app-BcNHRETF.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "name": "app",
@@ -31,7 +31,7 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-DMzqehem.js",
+    "file": "assets/app-BzLDT-FM.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
@@ -39,7 +39,7 @@
       "_module.esm-33qf0sHa.js"
     ],
     "css": [
-      "assets/app-BPUsjtKA.css"
+      "assets/app-BcNHRETF.css"
     ]
   }
 }
