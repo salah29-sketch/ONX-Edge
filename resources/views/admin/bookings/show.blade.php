@@ -286,7 +286,6 @@
             </div>
         </div>
         @endif
-        </div>{{-- /showAddons --}}
     </div>{{-- /db-card-body --}}
 </div>{{-- /db-card --}}
 @endif
