@@ -145,7 +145,7 @@ html { transition: --onx-brand .4s ease; }
 .pkg-pr small{font-size:12px;color:rgba(var(--onx-brand-rgb),.6);font-weight:600;margin-right:2px;}
 .pkg-feats{list-style:none;display:flex;flex-direction:column;gap:5px;flex:1;margin-bottom:16px;}
 /* مشتركة — tag رمادي خفيف */
-.pkg-feats li{font-size:11px;color:rgba(255,255,255,.35);display:flex;align-items:center;gap:6px;line-height:1.5;background:rgba(255,255,255,.04);border-radius:6px;padding:4px 8px;}
+.pkg-feats li{font-size:11px;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:6px;line-height:1.5;background:rgba(255,255,255,.04);border-radius:6px;padding:4px 8px;}
 .pkg-feats li::before{content:'—';color:rgba(255,255,255,.18);font-size:10px;font-weight:900;flex-shrink:0;}
 /* extras — برتقالية بولد بدون خلفية، تبرز بوضوح */
 .pkg-feats li.extra{color:rgba(255,255,255,.92);font-weight:800;background:rgba(var(--onx-brand-rgb),.08);border:1px solid rgba(var(--onx-brand-rgb),.15);}

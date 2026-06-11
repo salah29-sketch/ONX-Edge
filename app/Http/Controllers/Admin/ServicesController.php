@@ -70,15 +70,24 @@ class ServicesController extends Controller
         $data['show_venue_selector']  = $request->boolean('show_venue_selector', false);
         $data['show_wilaya_selector'] = $request->boolean('show_wilaya_selector', false);
 
+        // capabilities من checkboxes
+        $capFromCheckboxes = [
+            'show_time'     => $request->boolean('cap_show_time', false),
+            'show_venue'    => $request->boolean('cap_show_venue', false),
+            'show_brand'    => $request->boolean('cap_show_brand', false),
+            'show_budget'   => $request->boolean('cap_show_budget', false),
+            'show_deadline' => $request->boolean('cap_show_deadline', false),
+        ];
+
         // capabilities: array فارغ بدلاً من null لتجنّب DB constraint
         if (!empty($data['capabilities'])) {
             $decoded = json_decode($data['capabilities'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return back()->withErrors(['capabilities' => 'الـ JSON غير صحيح، تحقق من الصياغة.'])->withInput();
             }
-            $data['capabilities'] = $decoded;
+            $data['capabilities'] = array_merge($decoded, $capFromCheckboxes);
         } else {
-            $data['capabilities'] = [];  // ← الإصلاح: [] بدل null
+            $data['capabilities'] = $capFromCheckboxes;
         }
 
         if ($request->hasFile('hero_image')) {
@@ -133,15 +142,24 @@ class ServicesController extends Controller
         $data['show_venue_selector']  = $request->boolean('show_venue_selector', false);
         $data['show_wilaya_selector'] = $request->boolean('show_wilaya_selector', false);
 
+        // capabilities من checkboxes
+        $capFromCheckboxes = [
+            'show_time'     => $request->boolean('cap_show_time', false),
+            'show_venue'    => $request->boolean('cap_show_venue', false),
+            'show_brand'    => $request->boolean('cap_show_brand', false),
+            'show_budget'   => $request->boolean('cap_show_budget', false),
+            'show_deadline' => $request->boolean('cap_show_deadline', false),
+        ];
+
         // capabilities: array فارغ بدلاً من null لتجنّب DB constraint
         if (!empty($data['capabilities'])) {
             $decoded = json_decode($data['capabilities'], true);
             if (json_last_error() !== JSON_ERROR_NONE) {
                 return back()->withErrors(['capabilities' => 'الـ JSON غير صحيح، تحقق من الصياغة.'])->withInput();
             }
-            $data['capabilities'] = $decoded;
+            $data['capabilities'] = array_merge($decoded, $capFromCheckboxes);
         } else {
-            $data['capabilities'] = [];  // ← الإصلاح: [] بدل null
+            $data['capabilities'] = $capFromCheckboxes;
         }
 
         if ($request->hasFile('hero_image')) {

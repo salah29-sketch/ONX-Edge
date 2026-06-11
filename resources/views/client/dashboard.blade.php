@@ -134,8 +134,6 @@
     display: flex; align-items: center; justify-content: center;
     font-size: 20px; flex-shrink: 0;
 }
-.booking-type-icon.event { background: var(--event-soft); }
-.booking-type-icon.ads   { background: var(--ads-soft); }
 .booking-card-v2.event { border-inline-start: 3px solid var(--event-primary) !important; }
 .booking-card-v2.ads   { border-inline-start: 3px solid var(--ads-primary)   !important; }
 .booking-progress-bar { height: 3px; background: #f3f4f6; border-radius: 2px; margin-top: 6px; overflow: hidden; }
@@ -186,7 +184,6 @@
 .client-portal-dark .booking-card-v2 { background: #151b25 !important; border-color: rgba(255,255,255,.07) !important; }
 .client-portal-dark .booking-card-v2:hover { box-shadow: 0 4px 12px rgba(0,0,0,.3) !important; }
 .client-portal-dark .booking-type-icon { background: rgba(245,166,35,.12) !important; }
-.client-portal-dark .booking-type-icon.ads { background: rgba(59,130,246,.12) !important; }
 .client-portal-dark .company-panel { background: rgba(22,101,52,.12) !important; border-color: rgba(34,197,94,.2) !important; }
 .client-portal-dark .company-panel-title { color: #4ade80 !important; }
 .client-portal-dark .company-stat .val { color: #4ade80 !important; }
@@ -229,9 +226,15 @@
         </div>
 
         @if($activeBooking)
+            @php
+                $heroCategory = $activeBooking->service?->category;
+                $heroCatName  = $heroCategory?->name ?? '—';
+                $heroCatIcon  = $heroCategory?->icon ?? '📋';
+            @endphp
             <div class="hero-event-block">
+                {{-- ✅ تغيير 1: يعرض اسم التصنيف وأيقونته من قاعدة البيانات --}}
                 <p class="text-gray-600 text-sm mb-2">
-                    {{ $activeBooking->booking_type === 'event' ? '🎬 تصوير فعاليات' : '📢 إعلانات' }}
+                    {{ $heroCatIcon }} {{ $heroCatName }}
                     @if($activeBooking->event_date)
                         · {{ ar_date($activeBooking->event_date, 'l d F') }}
                     @endif
@@ -343,7 +346,7 @@
 </div>
 @endif
 
-{{-- الاشتراكات الشهرية (باقات الإعلان) ──────────────────────────── --}}
+{{-- الاشتراكات الشهرية ──────────────────────────── --}}
 @php $subscriptions = $subscriptions ?? collect(); @endphp
 @if($subscriptions->isNotEmpty())
 <div class="mb-6">
@@ -372,7 +375,7 @@
 </div>
 @endif
 
-{{-- لوحة الشركات (يظهر فقط للشركات) --}}
+{{-- لوحة الشركات --}}
 @if(!empty($client->is_company))
 @php
     $totalSpent = $bookings->sum(fn($b) => $b->paidAmount());
@@ -412,30 +415,29 @@
     <div class="space-y-3">
         @foreach($bookings as $b)
             @php
-                $bStep  = $b->statusStep();
-                $isEvent= $b->booking_type === 'event';
-                $sDate  = $b->event_date ?? $b->deadline ?? $b->created_at;
-                $prog   = ($bStep / 4) * 100;
+                $bStep       = $b->statusStep();
+                $sDate       = $b->event_date ?? $b->deadline ?? $b->created_at;
+                $prog        = ($bStep / 4) * 100;
+                $bCategory   = $b->service?->category;
+                $bCatName    = $bCategory?->name ?? '—';
+                $bCatIcon    = $bCategory?->icon ?? '📋';
+                $bCatSlug    = $bCategory?->slug ?? 'default';
             @endphp
-            <a href="{{ route('client.bookings.show', $b) }}" class="booking-card-v2 {{ $isEvent ? 'event' : 'ads' }}">
-                <div class="booking-type-icon {{ $isEvent ? 'event' : 'ads' }}">{{ $isEvent ? '🎪' : '📢' }}</div>
+            <a href="{{ route('client.bookings.show', $b) }}" class="booking-card-v2" style="border-inline-start: 3px solid #f59e0b;">
+                <div class="booking-type-icon">{{ $bCatIcon }}</div>
                 <div class="flex-1 min-w-0">
                     <div class="flex justify-between items-center gap-2">
                         <span class="flex items-center gap-1.5 font-black text-gray-800 text-sm">
                             الطلب {{ $clientOrderMap[$b->id] ?? $b->id }}
-                            @if($isEvent)
-                                <span class="badge-event text-[10px] px-2 py-0.5">حفلة</span>
-                            @else
-                                <span class="badge-ads text-[10px] px-2 py-0.5">إعلان</span>
-                            @endif
+                            <span class="badge-event text-[10px] px-2 py-0.5">{{ $bCatName }}</span>
                         </span>
                         <span class="booking-status {{ $b->status }}">{{ $b->statusLabel() }}</span>
                     </div>
                     <p class="text-xs text-gray-500 mt-0.5">
-                        {{ $isEvent ? 'تصوير فعاليات' : 'إعلانات' }} · {{ $sDate->format('d/m/Y') }}
+                        {{ $b->service?->name ?? $bCatName }} · {{ $sDate->format('d/m/Y') }}
                     </p>
                     <div class="booking-progress-bar">
-                        <div class="booking-progress-fill {{ $isEvent ? 'event' : 'ads' }}" style="width: {{ $prog }}%"></div>
+                        <div class="booking-progress-fill event" style="width: {{ $prog }}%"></div>
                     </div>
                 </div>
             </a>

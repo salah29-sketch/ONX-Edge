@@ -1084,3 +1084,73 @@ transform:scale(1.05);
   transform-origin:center center;
   will-change:transform;
 }
+/* ─── Dark Mode fixes ─── */
+.onx-dark .db-input,
+.onx-dark select.db-input,
+.onx-dark textarea.db-input {
+    background: var(--card-bg) !important;
+    color: var(--tx-primary) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .db-detail-item {
+    background: var(--card-bg) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .db-detail-label {
+    color: var(--tx-secondary) !important;
+}
+
+.onx-dark .db-detail-value {
+    color: var(--tx-primary) !important;
+}
+
+.onx-dark .db-card {
+    background: var(--card-bg) !important;
+}
+
+.onx-dark .db-table thead th {
+    background: var(--card-bg) !important;
+    color: var(--tx-secondary) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .db-table tbody td {
+    color: var(--tx-primary) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .db-table tbody tr {
+    border-color: var(--in-border) !important;
+}
+
+/* ─── Dark Mode: payment summary cards ─── */
+.onx-dark .db-card-body [style*="background:#f8f9fb"],
+.onx-dark .db-card-body [style*="background: #f8f9fb"] {
+    background: var(--card-bg) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .db-card-body [style*="background:#f8f9fb"] div,
+.onx-dark .db-card-body [style*="background:#f8f9fb"] {
+    color: var(--tx-primary) !important;
+}
+
+.onx-dark .payment-card-total {
+    background: var(--card-bg) !important;
+    border-color: var(--in-border) !important;
+}
+
+.onx-dark .payment-card-total div {
+    color: var(--tx-primary) !important;
+}
+
+.onx-dark .payment-card-total {
+    background: #161d2e !important;
+    border-color: #ffffff12 !important;
+}
+
+.onx-dark .payment-card-total div {
+    color: #f1f5f9 !important;
+}

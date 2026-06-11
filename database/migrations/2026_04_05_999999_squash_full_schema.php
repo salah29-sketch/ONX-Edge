@@ -457,7 +457,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('booking_id')->constrained()->cascadeOnDelete();
             $table->decimal('amount', 12, 2);
-            $table->string('method')->nullable();
+$table->string('type', 50);
+$table->string('method')->nullable();
+$table->string('reference')->nullable();
+$table->date('paid_at')->nullable();
             $table->string('status')->default('pending');
             $table->text('notes')->nullable();
             $table->timestamps();

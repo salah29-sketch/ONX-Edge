@@ -5,32 +5,33 @@ use App\Models\Booking\Booking;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Package extends Model
 {
     protected $fillable = [
         'service_id',
         'name',
-        'subtitle',        // من OfferPackage
+        'subtitle',
         'description',
         'price',
-        'old_price',       // من OfferPackage — سعر قبل الخصم
-        'price_note',      // من OfferPackage — "حسب الطلب"
-        'duration',        // مدة الباقة / صلاحيتها
-        'features',        // JSON — قائمة المميزات
-        'is_featured',     // من OfferPackage — باقة مميزة
-        'is_buildable',    // هل تدعم Package Builder؟ (زواج فقط)
+        'old_price',
+        'price_note',
+        'duration',
+        'features',
+        'is_featured',
+        'is_buildable',
         'sort_order',
         'is_active',
     ];
 
     protected $casts = [
-        'price'       => 'decimal:2',
-        'old_price'   => 'decimal:2',
-        'features'    => 'array',
-        'is_featured' => 'boolean',
-        'is_buildable'=> 'boolean',
-        'is_active'   => 'boolean',
+        'price'        => 'decimal:2',
+        'old_price'    => 'decimal:2',
+        'features'     => 'array',
+        'is_featured'  => 'boolean',
+        'is_buildable' => 'boolean',
+        'is_active'    => 'boolean',
     ];
 
     // ── Relationships ────────────────────────────────────────────────
@@ -55,6 +56,14 @@ class Package extends Model
     public function bookings(): HasMany
     {
         return $this->hasMany(Booking::class);
+    }
+
+    public function serviceItems(): BelongsToMany
+    {
+        return $this->belongsToMany(ServiceItem::class, 'package_service_items')
+                    ->withPivot('quantity_label', 'sort_order')
+                    ->orderBy('package_service_items.sort_order')
+                    ->withTimestamps();
     }
 
     // ── Scopes ───────────────────────────────────────────────────────
@@ -95,5 +104,18 @@ class Package extends Model
     public function hasDiscount(): bool
     {
         return $this->old_price && $this->price < $this->old_price;
+    }
+
+    public function getFeaturesAttribute($value): array
+    {
+        if ($this->relationLoaded('serviceItems') && $this->serviceItems->isNotEmpty()) {
+            return $this->serviceItems->map(function ($item) {
+                return $item->pivot->quantity_label
+                    ? $item->name . " (" . $item->pivot->quantity_label . ")"
+                    : $item->name;
+            })->toArray();
+        }
+        if (is_array($value)) return $value;
+        return json_decode($value, true) ?? [];
     }
 }

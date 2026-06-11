@@ -11,23 +11,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Service extends Model
 {
     protected $fillable = [
-        // ── معلومات أساسية
         'category_id',
         'name',
         'slug',
         'description',
         'icon',
         'hero_image',
-        'capabilities',   // JSON — مميزات تظهر في الصفحة
+        'capabilities',
         'sort_order',
         'is_active',
-
-        // ── نوع الحجز (ما كان في Offer.pricing_type + Offer.type)
-        'booking_type',          // BookingType enum: event | package | subscription
-        'pricing_mode',          // 'fixed' | 'custom' | 'quote'
-        'availability_required', // هل يحتاج تاريخ ومكان؟ (من Offer)
-
-        // ── إعدادات الحجز بالوقت (للأحداث)
+        'booking_type',
+        'pricing_mode',
+        'availability_required',
         'time_mode',
         'free_hours',
         'extra_hour_price',
@@ -35,28 +30,24 @@ class Service extends Model
         'late_end_price',
         'default_start_time',
         'default_end_time',
-
-        // ── إعدادات المكان
         'show_venue_selector',
         'show_wilaya_selector',
-
-        // ── أسعار
         'deposit_amount',
         'base_price',
     ];
 
     protected $casts = [
-        'is_active'              => 'boolean',
-        'availability_required'  => 'boolean',
-        'show_venue_selector'    => 'boolean',
-        'show_wilaya_selector'   => 'boolean',
-        'capabilities'           => 'array',
-        'booking_type'           => BookingType::class,
-        'extra_hour_price'       => 'decimal:2',
-        'early_start_price'      => 'decimal:2',
-        'late_end_price'         => 'decimal:2',
-        'deposit_amount'         => 'decimal:2',
-        'base_price'             => 'decimal:2',
+        'is_active'             => 'boolean',
+        'availability_required' => 'boolean',
+        'show_venue_selector'   => 'boolean',
+        'show_wilaya_selector'  => 'boolean',
+        'capabilities'          => 'array',
+        'booking_type'          => BookingType::class,
+        'extra_hour_price'      => 'decimal:2',
+        'early_start_price'     => 'decimal:2',
+        'late_end_price'        => 'decimal:2',
+        'deposit_amount'        => 'decimal:2',
+        'base_price'            => 'decimal:2',
     ];
 
     // ── Relationships ────────────────────────────────────────────────
@@ -74,6 +65,18 @@ class Service extends Model
     public function activePackages(): HasMany
     {
         return $this->hasMany(Package::class)
+            ->where('is_active', true)
+            ->orderBy('sort_order');
+    }
+
+    public function items(): HasMany
+    {
+        return $this->hasMany(ServiceItem::class)->orderBy('sort_order');
+    }
+
+    public function activeItems(): HasMany
+    {
+        return $this->hasMany(ServiceItem::class)
             ->where('is_active', true)
             ->orderBy('sort_order');
     }

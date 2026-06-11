@@ -84,7 +84,7 @@ public function packages(Request $request): JsonResponse
 {
     $serviceId = $request->query('service_id');
 
-    $query = Package::with('activeOptions')->where('is_active', true);
+    $query = Package::with(['activeOptions', 'serviceItems'])->where('is_active', true);
 
     if ($serviceId) {
         $query->where('service_id', (int) $serviceId);

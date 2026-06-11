@@ -138,7 +138,7 @@ public function __construct(PromoCodeService $promoCodeService)
         $pkg          = $booking->package;
 
         if ($pkg) {
-            $packageName  = $pkg->name;
+            $packageName  = $pkg->subtitle ?: $pkg->name;
             $packagePrice = $pkg->price ?? $pkg->price_note;
         }
 

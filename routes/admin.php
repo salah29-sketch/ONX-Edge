@@ -87,6 +87,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin.audit'])->gro
     // ─── الخدمات ─────────────────────────────────────────────
     Route::resource('services', ServicesController::class);
 
+    // ─── عناصر الخدمات (Service Items) ────────────────────────
+    Route::get('services/{service}/items', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'index'])->name('services.items.index');
+    Route::get('services/{service}/items/create', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'create'])->name('services.items.create');
+    Route::post('services/{service}/items', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'store'])->name('services.items.store');
+    Route::get('services/{service}/items/{item}/edit', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'edit'])->name('services.items.edit');
+    Route::patch('services/{service}/items/{item}', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'update'])->name('services.items.update');
+    Route::delete('services/{service}/items/{item}', [\App\Http\Controllers\Admin\ServiceItemsController::class, 'destroy'])->name('services.items.destroy');
+
     // ─── الباقات (Packages) ──────────────────────────────────
     Route::resource('packages', PackagesController::class)->except(['show']);
     

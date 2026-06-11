@@ -235,7 +235,7 @@ class ServiceController extends Controller
             ->with('category')
             ->firstOrFail();
 
-        $service->load(['activePackages.activeOptions']);
+        $service->load(['activePackages.activeOptions', 'activePackages.serviceItems']);
 
         $presenter = new ServicePresenter($service);
 

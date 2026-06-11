@@ -2,6 +2,7 @@
 
 @section('content')
 @php
+    $caps = $booking->service?->capabilities ?? [];
     $statusList = [
         'pending'     => ['label' => 'قيد الانتظار', 'class' => 'db-badge-new'],
         'unconfirmed' => ['label' => 'غير مؤكد', 'class' => 'db-badge-new'],
@@ -18,212 +19,238 @@
         <h1 class="db-page-title">تفاصيل الحجز #{{ $booking->id }}</h1>
         <div class="db-page-subtitle">عرض بيانات الحجز وتحديث حالته.</div>
     </div>
-
     <a href="{{ route('admin.bookings.index') }}" class="db-btn-secondary">
         <i class="fas fa-arrow-right"></i>
         رجوع
     </a>
 </div>
 
-{{-- ─── بيانات الحجز: عرض افتراضي + أيقونة تعديل ───── --}}
-<div x-data="{ openDetails: true, openPhotos: true, openClientPhotos: true }">
+{{-- ─── بيانات الحجز ───── --}}
+<div x-data="{ openDetails: true, editing: false, openPhotos: true, openClientPhotos: true, openPayments: true, openFiles: true }">
+
 <div class="db-card mb-4">
-    <div class="db-card-header db-card-header-toggle flex justify-between items-center" @click="openDetails = !openDetails" role="button" :aria-expanded="openDetails">
+    <div class="db-card-header db-card-header-toggle flex justify-between items-center"
+         @click="openDetails = !openDetails" role="button" :aria-expanded="openDetails">
         <span>بيانات الحجز</span>
         <span class="flex items-center" onclick="event.stopPropagation();">
-            <button type="button" class="text-sm border-0 me-2 text-[var(--onx-orange)] hover:text-[var(--onx-orange-hover)] transition js-booking-edit-toggle" title="تعديل" id="btn-booking-edit">
+            <button type="button" @click.stop="editing = true; openDetails = true"
+                    class="text-sm border-0 me-2 text-[var(--onx-orange)] hover:text-[var(--onx-orange-hover)] transition"
+                    title="تعديل" x-show="!editing">
                 <i class="fas fa-pen"></i>
             </button>
             <i class="fas fa-chevron-down db-collapse-icon"></i>
         </span>
     </div>
-    <div x-show="openDetails" x-collapse class="db-card-body">
-        {{-- وضع العرض (افتراضي) ─── --}}
-        <div id="booking-details-view" class="db-detail-grid">
-            <div class="db-detail-item">
-                <div class="db-detail-label">العميل</div>
-                <div class="db-detail-value">
-                    @if($booking->client)
-                        <a href="{{ route('admin.clients.show', $booking->client->id) }}">{{ $booking->client->name }}</a>
-                    @else — @endif
-                </div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">الهاتف</div>
-                <div class="db-detail-value">{{ $booking->phone ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">البريد الإلكتروني</div>
-                <div class="db-detail-value">{{ $booking->email ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">نوع الخدمة</div>
-                <div class="db-detail-value">{{ $booking->service?->name ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">الباقة المختارة</div>
-                <div class="db-detail-value">{{ $booking->package?->name ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">السعر الإجمالي (DA)</div>
-                <div class="db-detail-value">{{ $booking->final_price ? number_format($booking->final_price, 0) : ($booking->total_price ? number_format($booking->total_price, 0) : '—') }}</div>
-            </div>
-            @if($booking->service?->slug === 'events')
-                <div class="db-detail-item">
-                    <div class="db-detail-label">تاريخ الحفل</div>
-                    <div class="db-detail-value">{{ $booking->event_date?->format('Y-m-d') ?? '—' }}</div>
-                </div>
-                <div class="db-detail-item">
-                    <div class="db-detail-label">مكان الحفل</div>
-                    <div class="db-detail-value">{{ $booking->eventBooking?->venueName() ?? '—' }}</div>
-                </div>
-            @else
-                <div class="db-detail-item">
-                    <div class="db-detail-label">التاريخ</div>
-                    <div class="db-detail-value">{{ $booking->event_date?->format('Y-m-d') ?? '—' }}</div>
-                </div>
-            @endif
-            <div class="db-detail-item">
-                <div class="db-detail-label">اسم النشاط التجاري</div>
-                <div class="db-detail-value">{{ $booking->business_name ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">الميزانية</div>
-                <div class="db-detail-value">{{ $booking->budget ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">موعد التسليم</div>
-                <div class="db-detail-value">{{ $booking->deadline ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">الحالة</div>
-                <div class="db-detail-value">{{ $statusList[$booking->status->value ?? $booking->status]['label'] ?? $booking->status }}</div>
-            </div>
-            <div class="db-detail-item" style="grid-column:1/-1;">
-                <div class="db-detail-label">الملاحظات</div>
-                <div class="db-detail-value">{{ $booking->notes ? nl2br(e($booking->notes)) : '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">تاريخ الإنشاء</div>
-                <div class="db-detail-value">{{ $booking->created_at?->format('Y-m-d H:i') ?? '—' }}</div>
-            </div>
-            <div class="db-detail-item">
-                <div class="db-detail-label">آخر تحديث</div>
-                <div class="db-detail-value">{{ $booking->updated_at?->format('Y-m-d H:i') ?? '—' }}</div>
-            </div>
-        </div>
 
-        {{-- وضع التعديل (مخفي حتى النقر على أيقونة التعديل) ─── --}}
-        <div id="booking-details-edit" class="hidden">
-            <form action="{{ route('admin.bookings.updateDetails', $booking->id) }}" method="POST">
-                @csrf
-                @method('PATCH')
-                <div class="db-detail-grid">
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">العميل</div>
-                        <div class="db-detail-value">
-                            @if($booking->client)
-                                <a href="{{ route('admin.clients.show', $booking->client->id) }}">{{ $booking->client->name }}</a>
-                            @else — @endif
-                        </div>
+    <div x-show="openDetails" class="db-card-body">
+
+        {{-- ─── فورم واحد يعمل للعرض والتعديل معاً ─── --}}
+        <form action="{{ route('admin.bookings.updateDetails', $booking->id) }}" method="POST">
+            @csrf
+            @method('PATCH')
+
+            <div class="db-detail-grid">
+
+                {{-- العميل (عرض فقط) --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">العميل</div>
+                    <div class="db-detail-value">
+                        @if($booking->client)
+                            <a href="{{ route('admin.clients.show', $booking->client->id) }}">{{ $booking->client->name }}</a>
+                        @else — @endif
                     </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">الهاتف</div>
-                        <div class="db-detail-value">{{ $booking->phone ?? '—' }}</div>
+                </div>
+
+                {{-- الهاتف --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">الهاتف</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->phone ?? '—' }}</span>
+                        <input x-show="editing" x-cloak type="text" name="phone"
+                               value="{{ $booking->phone }}" class="db-input">
                     </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">البريد الإلكتروني</div>
-                        <div class="db-detail-value">{{ $booking->email ?? '—' }}</div>
+                </div>
+
+                {{-- البريد الإلكتروني --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">البريد الإلكتروني</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->email ?? '—' }}</span>
+                        <input x-show="editing" x-cloak type="email" name="email"
+                               value="{{ $booking->email }}" class="db-input">
                     </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">نوع الخدمة</div>
-                        <div class="db-detail-value">{{ $booking->service?->name ?? '—' }}</div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">الباقة المختارة</div>
-                        <div class="db-detail-value">
+                </div>
+
+                {{-- نوع الخدمة (عرض فقط) --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">نوع الخدمة</div>
+                    <div class="db-detail-value">{{ $booking->service?->name ?? '—' }}</div>
+                </div>
+
+                {{-- الباقة --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">الباقة المختارة</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->package?->name ?? '—' }}</span>
+                        <div x-show="editing" x-cloak>
                             @if($packagesByService && $packagesByService->isNotEmpty())
                                 <select name="package_id" class="db-input">
                                     <option value="">— اختر —</option>
                                     @foreach($packagesByService as $id => $name)
-                                        <option value="{{ $id }}" {{ (string)$booking->package_id === (string)$id ? 'selected' : '' }}>{{ $name }}</option>
+                                        <option value="{{ $id }}"
+                                            {{ (string)$booking->package_id === (string)$id ? 'selected' : '' }}>
+                                            {{ $name }}
+                                        </option>
                                     @endforeach
                                 </select>
                             @else
-                                {{ $booking->package?->name ?? '—' }}
+                                <span>{{ $booking->package?->name ?? '—' }}</span>
                             @endif
                         </div>
                     </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">السعر الإجمالي (DA)</div>
-                        <div class="db-detail-value">
-                            <input type="number" name="total_price" value="{{ $booking->total_price }}" min="0" step="1" placeholder="0" class="db-input">
-                        </div>
-                    </div>
-                    @if($booking->service?->slug === 'events')
-                        <div class="db-detail-item">
-                            <div class="db-detail-label">تاريخ الحفل</div>
-                            <div class="db-detail-value">
-                                <input type="date" name="event_date" value="{{ $booking->event_date?->format('Y-m-d') }}" class="db-input">
-                            </div>
-                        </div>
-                    @endif
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">اسم النشاط التجاري</div>
-                        <div class="db-detail-value">{{ $booking->business_name ?? '—' }}</div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">الميزانية</div>
-                        <div class="db-detail-value">{{ $booking->budget ?? '—' }}</div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">موعد التسليم</div>
-                        <div class="db-detail-value">{{ $booking->deadline ?? '—' }}</div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">الحالة</div>
-                        <div class="db-detail-value">
-                            <select name="status" class="db-input">
-                                @foreach($statusList as $value => $info)
-                                    <option value="{{ $value }}" {{ ($booking->status->value ?? $booking->status) === $value ? 'selected' : '' }}>{{ $info['label'] }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-                    <div class="db-detail-item" style="grid-column:1/-1;">
-                        <div class="db-detail-label">الملاحظات</div>
-                        <div class="db-detail-value">
-                            <textarea name="notes" class="db-input" rows="3">{{ $booking->notes }}</textarea>
-                        </div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">تاريخ الإنشاء</div>
-                        <div class="db-detail-value">{{ $booking->created_at?->format('Y-m-d H:i') ?? '—' }}</div>
-                    </div>
-                    <div class="db-detail-item">
-                        <div class="db-detail-label">آخر تحديث</div>
-                        <div class="db-detail-value">{{ $booking->updated_at?->format('Y-m-d H:i') ?? '—' }}</div>
+                </div>
+
+                {{-- السعر الإجمالي --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">السعر الإجمالي (DA)</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">
+                            {{ $booking->final_price
+                                ? number_format($booking->final_price, 0)
+                                : ($booking->total_price ? number_format($booking->total_price, 0) : '—') }}
+                        </span>
+                        <input x-show="editing" x-cloak type="number" name="final_price"
+                               value="{{ $booking->final_price ?? $booking->total_price }}"
+                               min="0" step="1" placeholder="0" class="db-input">
                     </div>
                 </div>
-                <div class="db-form-actions mt-3">
-                    <button type="submit" class="db-btn-success">
-                        <i class="fas fa-save"></i> حفظ التعديلات
-                    </button>
-                    <button type="button" class="db-btn-secondary js-booking-edit-cancel">
-                        <i class="fas fa-times"></i> إلغاء
-                    </button>
+
+                {{-- تاريخ الحفل --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">تاريخ الحفل</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->event_date?->format('Y-m-d') ?? '—' }}</span>
+                        <input x-show="editing" x-cloak type="date" name="event_date"
+                               value="{{ $booking->event_date?->format('Y-m-d') }}" class="db-input">
+                    </div>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
+
+                @if(!empty($caps['show_time']))
+                <div class="db-detail-item">
+                    <div class="db-detail-label">وقت البداية</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->eventBooking?->start_time ?? '—' }}</span>
+                        <input x-show="editing" x-cloak type="time" name="start_time"
+                               value="{{ $booking->eventBooking?->start_time }}" class="db-input">
+                    </div>
+                </div>
+                <div class="db-detail-item">
+                    <div class="db-detail-label">وقت النهاية</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{{ $booking->eventBooking?->end_time ?? '—' }}</span>
+                        <input x-show="editing" x-cloak type="time" name="end_time"
+                               value="{{ $booking->eventBooking?->end_time }}" class="db-input">
+                    </div>
+                </div>
+                @endif
+
+                @if(!empty($caps['show_venue']))
+                <div class="db-detail-item">
+                    <div class="db-detail-label">المكان / القاعة</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">
+                            {{ $booking->eventBooking?->venue_custom ?? ($booking->eventBooking?->venueName() ?? '—') }}
+                        </span>
+                        <input x-show="editing" x-cloak type="text" name="venue_custom"
+                               value="{{ $booking->eventBooking?->venue_custom }}"
+                               placeholder="اسم القاعة أو المكان..." class="db-input">
+                    </div>
+                </div>
+                @endif
+
+                @if(!empty($caps['show_brand']))
+                <div class="db-detail-item">
+                    <div class="db-detail-label">اسم البراند</div>
+                    <div class="db-detail-value">{{ $booking->business_name ?? '—' }}</div>
+                </div>
+                @endif
+
+                @if(!empty($caps['show_budget']))
+                <div class="db-detail-item">
+                    <div class="db-detail-label">الميزانية</div>
+                    <div class="db-detail-value">{{ $booking->budget ?? '—' }}</div>
+                </div>
+                @endif
+
+                @if(!empty($caps['show_deadline']))
+                <div class="db-detail-item">
+                    <div class="db-detail-label">موعد التسليم</div>
+                    <div class="db-detail-value">{{ $booking->deadline ?? '—' }}</div>
+                </div>
+                @endif
+
+                {{-- الحالة --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">الحالة</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">
+                            {{ $statusList[$booking->status->value ?? $booking->status]['label'] ?? $booking->status }}
+                        </span>
+                        <select x-show="editing" x-cloak name="status" class="db-input">
+                            @foreach($statusList as $value => $info)
+                                <option value="{{ $value }}"
+                                    {{ ($booking->status->value ?? $booking->status) === $value ? 'selected' : '' }}>
+                                    {{ $info['label'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+
+                {{-- الملاحظات --}}
+                <div class="db-detail-item" style="grid-column:1/-1;">
+                    <div class="db-detail-label">الملاحظات</div>
+                    <div class="db-detail-value">
+                        <span x-show="!editing">{!! $booking->notes ? nl2br(e($booking->notes)) : '—' !!}</span>
+                        <textarea x-show="editing" x-cloak name="notes"
+                                  class="db-input" rows="3">{{ $booking->notes }}</textarea>
+                    </div>
+                </div>
+
+                {{-- تاريخ الإنشاء وآخر تحديث (عرض فقط) --}}
+                <div class="db-detail-item">
+                    <div class="db-detail-label">تاريخ الإنشاء</div>
+                    <div class="db-detail-value">{{ $booking->created_at?->format('Y-m-d H:i') ?? '—' }}</div>
+                </div>
+                <div class="db-detail-item">
+                    <div class="db-detail-label">آخر تحديث</div>
+                    <div class="db-detail-value">{{ $booking->updated_at?->format('Y-m-d H:i') ?? '—' }}</div>
+                </div>
+
+            </div>{{-- /db-detail-grid --}}
+
+            {{-- أزرار الحفظ/الإلغاء تظهر فقط عند التعديل --}}
+            <div x-show="editing" x-cloak class="db-form-actions mt-3">
+                <button type="submit" class="db-btn-success">
+                    <i class="fas fa-save"></i> حفظ التعديلات
+                </button>
+                <button type="button" @click="editing = false" class="db-btn-secondary">
+                    <i class="fas fa-times"></i> إلغاء
+                </button>
+            </div>
+
+        </form>
+
+    </div>{{-- /db-card-body --}}
+</div>{{-- /db-card --}}
 
 {{-- ─── المدفوعات والملفات ──────────────────────────── --}}
 @include('admin.bookings._payments-files', ['booking' => $booking])
 
 {{-- ─── صور الحجز ───────────────────────────────────── --}}
 <div class="db-card mt-4">
-    <div class="db-card-header db-card-header-toggle flex justify-between items-center" @click="openPhotos = !openPhotos" role="button" :aria-expanded="openPhotos">
+    <div class="db-card-header db-card-header-toggle flex justify-between items-center"
+         @click="openPhotos = !openPhotos" role="button" :aria-expanded="openPhotos">
         <span>صور الحجز (العميل يشاهدها ويختار حتى 200 مميزة للطباعة)</span>
         <i class="fas fa-chevron-down db-collapse-icon"></i>
     </div>
@@ -233,9 +260,10 @@
                 <strong>خطأ في الرفع:</strong> {{ $errors->first('post_size') }}
             </div>
         @endif
-        {{-- منطقة الرفع ─── --}}
+
         <div class="booking-photos-upload mb-4">
-            <form action="{{ route('admin.bookings.photos.store') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2 flex-wrap items-end">
+            <form action="{{ route('admin.bookings.photos.store') }}" method="POST"
+                  enctype="multipart/form-data" class="flex items-center gap-2 flex-wrap items-end">
                 @csrf
                 <input type="hidden" name="booking_id" value="{{ $booking->id }}">
                 <div class="mb-4 me-3 mb-2">
@@ -260,7 +288,7 @@
             </div>
 
             <script type="application/json" id="booking-lightbox-sources">{{ json_encode($photosPaginated->pluck('path')->map(function($path) { return asset($path); })->values()) }}</script>
-            {{-- Lightbox مثل عميل DB: معرض الصور، أسهم دائرية فقط، شريط علوي ─── --}}
+
             <div id="booking-photo-lightbox" class="booking-lightbox" aria-hidden="true">
                 <div class="booking-lightbox-backdrop"></div>
                 <div class="booking-lightbox-topbar">
@@ -290,7 +318,8 @@
                                 <a href="{{ asset($p->path) }}" class="photo-action-btn js-booking-lightbox-open" title="تكبير">
                                     <i class="fas fa-expand"></i>
                                 </a>
-                                <form action="{{ route('admin.bookings.photos.destroy', $p) }}" method="POST" class="inline" onsubmit="return confirm('حذف هذه الصورة؟');">
+                                <form action="{{ route('admin.bookings.photos.destroy', $p) }}" method="POST"
+                                      class="inline" onsubmit="return confirm('حذف هذه الصورة؟');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="db-btn-danger text-sm" title="حذف">
@@ -320,7 +349,8 @@
 {{-- ─── الصور المميزة التي اختارها العميل ─────────── --}}
 @if($booking->client && $clientSelectedPhotos->isNotEmpty())
 <div class="db-card mt-4 border-success">
-    <div class="db-card-header db-card-header-toggle bg-green-600 text-white flex justify-between items-center" @click="openClientPhotos = !openClientPhotos" role="button" :aria-expanded="openClientPhotos">
+    <div class="db-card-header db-card-header-toggle bg-green-600 text-white flex justify-between items-center"
+         @click="openClientPhotos = !openClientPhotos" role="button" :aria-expanded="openClientPhotos">
         <span>ما اختاره العميل للطباعة ({{ $clientSelectedPhotos->count() }})</span>
         <i class="fas fa-chevron-down db-collapse-icon"></i>
     </div>
@@ -347,9 +377,8 @@
 .db-card-header-toggle:hover { opacity: 0.9; }
 .db-collapse-icon { transition: transform 0.2s ease; }
 .db-card-header-toggle[aria-expanded="false"] .db-collapse-icon { transform: rotate(-90deg); }
-.js-booking-edit-toggle { cursor: pointer; }
+[x-cloak] { display: none !important; }
 
-/* معرض صور الحجز */
 .booking-photos-upload {
     background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
     border: 1px dashed #cbd5e1;
@@ -380,9 +409,7 @@
 .booking-photo-card:hover .booking-photo-img { transform: scale(1.05); }
 .booking-photo-actions {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 0; left: 0; right: 0;
     padding: 8px;
     background: linear-gradient(to top, rgba(0,0,0,.75), transparent);
     display: flex;
@@ -392,146 +419,67 @@
     transition: opacity 0.2s ease;
 }
 .booking-photo-card:hover .booking-photo-actions { opacity: 1; }
-.booking-photo-actions .btn { padding: 4px 10px; }
-.booking-photo-actions .photo-action-btn { color: #334155; }
 .booking-photos-empty { background: #f8fafc; border-radius: 12px; }
 
-/* Lightbox مثل عميل DB: خلفية سوداء، شريط علوي، أسهم دائرية فقط */
 .booking-lightbox {
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(0, 0, 0, 0.95);
-    opacity: 0;
-    visibility: hidden;
+    position: fixed; inset: 0; z-index: 9999;
+    background: rgba(0,0,0,0.95);
+    opacity: 0; visibility: hidden;
     transition: opacity 0.25s ease, visibility 0.25s ease;
-    display: flex;
-    flex-direction: column;
+    display: flex; flex-direction: column;
 }
-.booking-lightbox.is-open {
-    opacity: 1;
-    visibility: visible;
-}
+.booking-lightbox.is-open { opacity: 1; visibility: visible; }
 body.booking-lightbox-active { overflow: hidden; }
-.booking-lightbox-backdrop {
-    position: absolute;
-    inset: 0;
-    cursor: pointer;
-    z-index: 0;
-}
+.booking-lightbox-backdrop { position: absolute; inset: 0; cursor: pointer; z-index: 0; }
 .booking-lightbox-topbar {
-    position: relative;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: space-between;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 .booking-lightbox-title {
-    font-size: 0.875rem;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: rgba(255,255,255,0.45);
+    font-size: 0.875rem; letter-spacing: 0.2em;
+    text-transform: uppercase; color: rgba(255,255,255,0.45);
 }
 .booking-lightbox-close {
-    width: 2.75rem;
-    height: 2.75rem;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50%;
-    background: transparent;
-    color: #fff;
-    font-size: 1.25rem;
-    line-height: 1;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    width: 2.75rem; height: 2.75rem;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 50%;
+    background: transparent; color: #fff; font-size: 1.25rem;
+    cursor: pointer; transition: background 0.2s, color 0.2s;
 }
-.booking-lightbox-close:hover {
-    background: #fff;
-    color: #000;
-}
-/* أسهم دائرية فقط (بدون صور مصغرة) — مثل عميل DB */
+.booking-lightbox-close:hover { background: #fff; color: #000; }
 .booking-lightbox-prev,
 .booking-lightbox-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 2;
-    width: 3rem;
-    height: 3rem;
-    padding: 0;
-    border: 1px solid rgba(255,255,255,0.15);
-    border-radius: 50%;
-    background: rgba(0,0,0,0.4);
-    color: #f97316;
-    font-size: 1.1rem;
-    cursor: pointer;
-    transition: background 0.2s, color 0.2s, transform 0.2s;
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 3rem; height: 3rem; padding: 0;
+    border: 1px solid rgba(255,255,255,0.15); border-radius: 50%;
+    background: rgba(0,0,0,0.4); color: #f97316; font-size: 1.1rem;
+    cursor: pointer; transition: background 0.2s, color 0.2s, transform 0.2s;
 }
 .booking-lightbox-prev:hover,
-.booking-lightbox-next:hover {
-    background: #fff;
-    color: #000;
-    transform: translateY(-50%) scale(1.1);
-}
+.booking-lightbox-next:hover { background: #fff; color: #000; transform: translateY(-50%) scale(1.1); }
 .booking-lightbox-prev { right: 1.5rem; }
 .booking-lightbox-next { left: 1.5rem; }
 .booking-lightbox-content {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 1.5rem;
-    min-height: 0;
-    position: relative;
-    z-index: 1;
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem; min-height: 0; position: relative; z-index: 1;
 }
 .booking-lightbox-img {
-    max-width: 100%;
-    max-height: 70vh;
-    width: auto;
-    height: auto;
-    object-fit: contain;
-    border-radius: 1rem;
+    max-width: 100%; max-height: 70vh; width: auto; height: auto;
+    object-fit: contain; border-radius: 1rem;
     border: 1px solid rgba(255,255,255,0.1);
     background: rgba(255,255,255,0.05);
 }
 .booking-lightbox-counter {
-    position: absolute;
-    bottom: 1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 2;
-    padding: 0.4rem 0.9rem;
-    background: rgba(0,0,0,0.5);
-    color: #fff;
-    font-size: 1rem;
-    font-weight: 600;
-    border-radius: 999px;
+    position: absolute; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 2;
+    padding: 0.4rem 0.9rem; background: rgba(0,0,0,0.5); color: #fff;
+    font-size: 1rem; font-weight: 600; border-radius: 999px;
 }
 </style>
 @endsection
 
 @section('scripts')
 <script>
-(function() {
-    var viewEl = document.getElementById('booking-details-view');
-    var editEl = document.getElementById('booking-details-edit');
-    var btnEdit = document.querySelector('.js-booking-edit-toggle');
-    var btnCancel = document.querySelector('.js-booking-edit-cancel');
-    if (!viewEl || !editEl || !btnEdit) return;
-    function showView() {
-        viewEl.classList.remove('hidden');
-        editEl.classList.add('hidden');
-    }
-    function showEdit() {
-        viewEl.classList.add('hidden');
-        editEl.classList.remove('hidden');
-    }
-    btnEdit.addEventListener('click', showEdit);
-    if (btnCancel) btnCancel.addEventListener('click', showView);
-})();
-
 (function() {
     var lb = document.getElementById('booking-photo-lightbox');
     var lbImg = lb && lb.querySelector('.booking-lightbox-img');
@@ -545,7 +493,7 @@ body.booking-lightbox-active { overflow: hidden; }
     var sources = [];
     var sourcesEl = document.getElementById('booking-lightbox-sources');
     if (sourcesEl && sourcesEl.textContent) {
-        try { sources = JSON.parse(sourcesEl.textContent); } catch (err) {}
+        try { sources = JSON.parse(sourcesEl.textContent); } catch(err) {}
     }
     if (sources.length === 0) {
         document.querySelectorAll('.booking-photo-link.js-booking-lightbox-open').forEach(function(a) {
@@ -574,14 +522,8 @@ body.booking-lightbox-active { overflow: hidden; }
         lb.classList.remove('is-open');
         document.body.classList.remove('booking-lightbox-active');
     }
-    function goPrev(e) {
-        if (e) e.stopPropagation();
-        if (sources.length) showImage(currentIndex - 1);
-    }
-    function goNext(e) {
-        if (e) e.stopPropagation();
-        if (sources.length) showImage(currentIndex + 1);
-    }
+    function goPrev(e) { if (e) e.stopPropagation(); if (sources.length) showImage(currentIndex - 1); }
+    function goNext(e) { if (e) e.stopPropagation(); if (sources.length) showImage(currentIndex + 1); }
 
     document.querySelectorAll('.js-booking-lightbox-open').forEach(function(el) {
         el.addEventListener('click', function(e) {

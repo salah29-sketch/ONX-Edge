@@ -16,9 +16,9 @@
             @method('PUT')
 
             <div class="grid grid-cols-12 gap-4">
-                <div class="col-span-12 md:col-span-6 mb-4 mb-3">
-                    <label>الخدمة المرتبطة <span class="text-danger">*</span></label>
-                    <select name="service_id" class=" @error('service_id') is-invalid @enderror" required>
+                <div class="col-span-12 md:col-span-6 mb-3">
+                    <label>الخدمة المرتبطة <span class="text-red-600">*</span></label>
+                    <select name="service_id" class="db-input @error('service_id') is-invalid @enderror" required>
                         <option value="">-- اختر الخدمة --</option>
                         @foreach($services as $id => $name)
                             <option value="{{ $id }}" {{ old('service_id', $package->service_id) == $id ? 'selected' : '' }}>{{ $name }}</option>
@@ -27,79 +27,93 @@
                     @error('service_id') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="col-span-12 md:col-span-6 mb-4 mb-3">
-                    <label>اسم الباقة <span class="text-danger">*</span></label>
-                    <input type="text" name="name" class=" @error('name') is-invalid @enderror" value="{{ old('name', $package->name) }}" required placeholder="مثال: الباقة الفضية">
+                <div class="col-span-12 md:col-span-6 mb-3">
+                    <label>اسم الباقة <span class="text-red-600">*</span></label>
+                    <input type="text" name="name" class="db-input @error('name') is-invalid @enderror" value="{{ old('name', $package->name) }}" required>
                     @error('name') <span class="invalid-feedback">{{ $message }}</span> @enderror
                 </div>
 
-                <div class="col-span-12 md:col-span-6 mb-4 mb-3">
+                <div class="col-span-12 md:col-span-6 mb-3">
                     <label>العنوان الفرعي (Subtitle)</label>
-                    <input type="text" name="subtitle" class=" @error('subtitle') is-invalid @enderror" value="{{ old('subtitle', $package->subtitle) }}">
-                    @error('subtitle') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <input type="text" name="subtitle" class="db-input @error('subtitle') is-invalid @enderror" value="{{ old('subtitle', $package->subtitle) }}">
                 </div>
 
-                <div class="col-span-12 md:col-span-6 mb-4 mb-3">
+                <div class="col-span-12 md:col-span-6 mb-3">
                     <label>مدة التنفيذ (Duration)</label>
-                    <input type="text" name="duration" class=" @error('duration') is-invalid @enderror" value="{{ old('duration', $package->duration) }}">
-                    @error('duration') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <input type="text" name="duration" class="db-input @error('duration') is-invalid @enderror" value="{{ old('duration', $package->duration) }}">
                 </div>
 
-                <div class="col-span-12 md:col-span-4 mb-4 mb-3">
-                    <label>السعر (د.ج) <span class="text-danger">*</span></label>
-                    <input type="number" step="0.01" name="price" class=" @error('price') is-invalid @enderror" value="{{ old('price', $package->price) }}" required>
-                    @error('price') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                <div class="col-span-12 md:col-span-4 mb-3">
+                    <label>السعر (د.ج) <span class="text-red-600">*</span></label>
+                    <input type="number" step="0.01" name="price" class="db-input @error('price') is-invalid @enderror" value="{{ old('price', $package->price) }}" required>
                 </div>
 
-                <div class="col-span-12 md:col-span-4 mb-4 mb-3">
+                <div class="col-span-12 md:col-span-4 mb-3">
                     <label>السعر القديم (د.ج)</label>
-                    <input type="number" step="0.01" name="old_price" class=" @error('old_price') is-invalid @enderror" value="{{ old('old_price', $package->old_price) }}">
-                    @error('old_price') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <input type="number" step="0.01" name="old_price" class="db-input @error('old_price') is-invalid @enderror" value="{{ old('old_price', $package->old_price) }}">
                 </div>
 
-                <div class="col-span-12 md:col-span-4 mb-4 mb-3">
+                <div class="col-span-12 md:col-span-4 mb-3">
                     <label>ملاحظة السعر</label>
-                    <input type="text" name="price_note" class=" @error('price_note') is-invalid @enderror" value="{{ old('price_note', $package->price_note) }}">
-                    @error('price_note') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <input type="text" name="price_note" class="db-input @error('price_note') is-invalid @enderror" value="{{ old('price_note', $package->price_note) }}">
                 </div>
 
-                <div class="col-span-12 mb-4 mb-3">
+                <div class="col-span-12 mb-3">
                     <label>الوصف</label>
-                    <textarea name="description" rows="3" class=" @error('description') is-invalid @enderror">{{ old('description', $package->description) }}</textarea>
-                    @error('description') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                    <textarea name="description" rows="3" class="db-input">{{ old('description', $package->description) }}</textarea>
                 </div>
 
-                <div class="col-span-12 mb-4 mb-3">
-                    <label>المميزات</label>
-                    <div id="features-list" class="space-y-2 mb-2"></div>
-                    <button type="button" onclick="addFeature()"
+                {{-- ── عناصر الباقة ── --}}
+                <div class="col-span-12 mb-3">
+                    <label class="block mb-2">عناصر الباقة</label>
+
+                    <div class="rounded-lg border border-[var(--card-border)] bg-[var(--body-bg)] p-3">
+                    {{-- العناصر بدون سعر (مشمولة) --}}
+                    <div id="items-free" class="space-y-2 mb-1"></div>
+
+                    {{-- فاصل --}}
+                    <div id="items-divider" class="hidden my-2 border-t border-dashed border-[var(--card-border)]"></div>
+
+                    {{-- العناصر بسعر (إضافات) --}}
+                    <div id="items-paid" class="space-y-2 mb-2"></div>
+
+                    @if(isset($serviceItems) && $serviceItems->isNotEmpty())
+                    <button type="button" onclick="openItemPicker()"
                         class="text-sm px-3 py-1.5 rounded-lg border border-dashed border-orange-500/40 text-orange-400 hover:bg-orange-500/10 transition">
-                        + إضافة ميزة
+                        + إضافة عنصر
                     </button>
-                    <input type="hidden" name="features" id="features-hidden">
-                    @error('features') <span class="text-red-400 text-sm">{{ $message }}</span> @enderror
+                    @else
+                    <p class="text-sm text-[var(--tx-secondary)]">لا توجد عناصر. <a href="{{ route('admin.services.items.index', $package->service_id) }}" class="text-orange-400 underline">أضف عناصر أولاً</a></p>
+                    @endif
+
+                    </div>
+                    <input type="hidden" name="service_items_json" id="items-hidden">
                 </div>
 
-                <div class="col-span-12 md:col-span-3 mb-4 mb-3">
-                    <label>الترتيب <span class="text-danger">*</span></label>
-                    <input type="number" name="sort_order" class=" @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $package->sort_order) }}" required>
-                    @error('sort_order') <span class="invalid-feedback">{{ $message }}</span> @enderror
+                {{-- Picker popup --}}
+                <div id="item-picker" class="hidden col-span-12 mb-3 p-3 rounded-lg border border-[var(--card-border)] bg-[var(--body-bg)]">
+                    <p class="text-sm font-bold mb-2">اختر عنصراً:</p>
+                    <div id="picker-list" class="space-y-1 max-h-60 overflow-y-auto"></div>
+                    <button type="button" onclick="closePicker()" class="mt-2 text-sm text-[var(--tx-secondary)] hover:text-red-400">إلغاء</button>
                 </div>
 
-                <div class="col-span-12 md:col-span-9 mb-4 mb-3 flex items-center gap-4 mt-4">
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" name="is_active" class="custom-control-input" id="isActive" value="1" {{ old('is_active', $package->is_active) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="isActive">باقة مفعلة</label>
-                    </div>
+                <div class="col-span-12 md:col-span-3 mb-3">
+                    <label>الترتيب <span class="text-red-600">*</span></label>
+                    <input type="number" name="sort_order" class="db-input @error('sort_order') is-invalid @enderror" value="{{ old('sort_order', $package->sort_order) }}" required>
+                </div>
 
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" name="is_featured" class="custom-control-input" id="isFeatured" value="1" {{ old('is_featured', $package->is_featured) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="isFeatured">باقة مميزة</label>
+                <div class="col-span-12 md:col-span-9 mb-3 flex items-center gap-4 mt-4">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_active" class="rounded border-gray-300" id="isActive" value="1" {{ old('is_active', $package->is_active) ? 'checked' : '' }}>
+                        <label for="isActive">باقة مفعلة</label>
                     </div>
-
-                    <div class="custom-control custom-switch">
-                        <input type="checkbox" name="is_buildable" class="custom-control-input" id="isBuildable" value="1" {{ old('is_buildable', $package->is_buildable) ? 'checked' : '' }}>
-                        <label class="custom-control-label" for="isBuildable">باقة قابلة للبناء (Custom)</label>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_featured" class="rounded border-gray-300" id="isFeatured" value="1" {{ old('is_featured', $package->is_featured) ? 'checked' : '' }}>
+                        <label for="isFeatured">باقة مميزة</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" name="is_buildable" class="rounded border-gray-300" id="isBuildable" value="1" {{ old('is_buildable', $package->is_buildable) ? 'checked' : '' }}>
+                        <label for="isBuildable">باقة قابلة للبناء</label>
                     </div>
                 </div>
             </div>
@@ -115,35 +129,99 @@
 
 @push('scripts')
 <script>
-function addFeature(value = '') {
-    const list = document.getElementById('features-list');
+// كل العناصر المتاحة للخدمة
+const allItems = @json($serviceItems ?? []);
+
+// العناصر المحفوظة في الباقة
+const savedItems = @json($selectedItems ?? []);
+
+// العناصر المختارة حالياً { id: {id, name, addon_price} }
+let chosen = {};
+
+function renderChosen() {
+    const free = document.getElementById('items-free');
+    const paid = document.getElementById('items-paid');
+    const divider = document.getElementById('items-divider');
+
+    free.innerHTML = '';
+    paid.innerHTML = '';
+
+    const freeItems = Object.values(chosen).filter(i => !i.addon_price);
+    const paidItems = Object.values(chosen).filter(i => i.addon_price);
+
+    freeItems.forEach(item => free.appendChild(makeRow(item)));
+    paidItems.forEach(item => paid.appendChild(makeRow(item)));
+
+    divider.classList.toggle('hidden', freeItems.length === 0 || paidItems.length === 0);
+}
+
+function makeRow(item) {
     const row = document.createElement('div');
-    row.className = 'flex items-center gap-2 feature-row';
+    row.className = 'flex items-center gap-2 item-row';
+    row.dataset.id = item.id;
+    const badge = item.addon_price
+        ? `<span class="text-xs text-orange-400 border border-orange-400/30 rounded px-1">${Number(item.addon_price).toLocaleString()} د.ج</span>`
+        : '';
     row.innerHTML = `
         <span class="text-green-400 font-bold text-lg">✓</span>
-        <input type="text" class="db-input feature-input flex-1" placeholder="أدخل ميزة..." value="${value}">
-        <button type="button" onclick="removeFeature(this)" class="text-red-400 hover:text-red-300 px-2 text-lg">✕</button>
+        <span class="flex-1 text-sm">${item.name}</span>
+        ${badge}
+        <button type="button" onclick="removeItem(${item.id})" class="text-red-400 hover:text-red-300 px-2 text-lg">✕</button>
     `;
-    list.appendChild(row);
+    return row;
 }
 
-function removeFeature(btn) {
-    btn.closest('.feature-row').remove();
+function openItemPicker() {
+    const picker = document.getElementById('item-picker');
+    const list = document.getElementById('picker-list');
+    picker.classList.remove('hidden');
+
+    // فقط العناصر غير المختارة
+    const available = allItems.filter(i => !chosen[i.id]);
+    list.innerHTML = '';
+
+    if (available.length === 0) {
+        list.innerHTML = '<p class="text-sm text-[var(--tx-secondary)]">تم اختيار جميع العناصر.</p>';
+        return;
+    }
+
+    available.forEach(item => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'w-full text-right px-3 py-2 rounded hover:bg-[var(--onx-orange-soft)] text-sm flex items-center justify-between gap-2';
+        const price = item.addon_price ? `<span class="text-xs text-orange-400">${Number(item.addon_price).toLocaleString()} د.ج</span>` : '';
+        btn.innerHTML = `<span>${item.name}</span>${price}`;
+        btn.onclick = () => selectItem(item);
+        list.appendChild(btn);
+    });
 }
 
-document.querySelector('form').addEventListener('submit', function() {
-    const inputs = document.querySelectorAll('.feature-input');
-    const features = Array.from(inputs)
-        .map(i => i.value.trim())
-        .filter(v => v !== '');
-    document.getElementById('features-hidden').value = JSON.stringify(features);
-});
-
-const existingFeatures = @json(old('features_array', $package->features ?? []));
-if (Array.isArray(existingFeatures) && existingFeatures.length > 0) {
-    existingFeatures.forEach(f => addFeature(f));
-} else {
-    addFeature();
+function selectItem(item) {
+    chosen[item.id] = item;
+    renderChosen();
+    closePicker();
+    saveHidden();
 }
+
+function removeItem(id) {
+    delete chosen[id];
+    renderChosen();
+    saveHidden();
+}
+
+function closePicker() {
+    document.getElementById('item-picker').classList.add('hidden');
+}
+
+function saveHidden() {
+    document.getElementById('items-hidden').value = JSON.stringify(Object.keys(chosen));
+}
+
+document.querySelector('form').addEventListener('submit', saveHidden);
+
+// تحميل المحفوظ
+savedItems.forEach(item => { chosen[item.id] = item; });
+renderChosen();
+saveHidden();
 </script>
 @endpush

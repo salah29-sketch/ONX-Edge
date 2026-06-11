@@ -52,9 +52,14 @@ class PortfolioItem extends Model
             if ($item->media_type === 'youtube' && !empty($item->youtube_url)) {
                 $item->youtube_video_id = self::extractYoutubeVideoId($item->youtube_url);
             }
+            if ($item->media_type === 'reel' && !empty($item->reel_url)) {
+                $item->youtube_video_id = self::extractYoutubeVideoId($item->reel_url);
+            }
             if ($item->media_type !== 'youtube') {
-                $item->youtube_url      = null;
-                $item->youtube_video_id = null;
+                $item->youtube_url = null;
+                if ($item->media_type !== 'reel') {
+                    $item->youtube_video_id = null;
+                }
             }
         });
     }

@@ -14,8 +14,8 @@ class ServicePresenter
 
     public function __construct(Service $service)
     {
-        $this->service = $service;
-        $this->packages  = $service->activePackages;
+        $this->service  = $service;
+        $this->packages = $service->activePackages()->with(['serviceItems' => function($q) { $q->orderBy('package_service_items.sort_order'); }])->get();
     }
 
     public function toView(): array
@@ -30,45 +30,30 @@ class ServicePresenter
         ];
     }
 
-    /** تصنيف Production: بدون باقات — تواصل مباشر فقط */
     private function isContactOnly(): bool
     {
         return $this->service->category?->slug === 'production';
     }
 
-    // ═══════════════════════════════════════════
-    //  Section orchestration
-    // ═══════════════════════════════════════════
-
     private function buildSections(): array
     {
         $sections = [];
-
         $sections[] = $this->heroSection();
 
         foreach ($this->packageSections() as $s) {
             $sections[] = $s;
         }
 
-        // ── جديد: آراء العملاء ──
         if ($this->service->cap('testimonials.enabled', false)) {
-            if ($s = $this->testimonialsSection()) {
-                $sections[] = $s;
-            }
+            if ($s = $this->testimonialsSection()) $sections[] = $s;
         }
 
-        if ($portfolio = $this->portfolioSection()) {
-            $sections[] = $portfolio;
-        }
+        if ($portfolio = $this->portfolioSection()) $sections[] = $portfolio;
 
-        // ── جديد: أسئلة شائعة ──
         if ($this->service->cap('faq.enabled', false)) {
-            if ($s = $this->faqSection()) {
-                $sections[] = $s;
-            }
+            if ($s = $this->faqSection()) $sections[] = $s;
         }
 
-        // ── مو متأكد (لا يُعرض في وضع التواصل المباشر لتجنب تكرار الروابط) ──
         if ($this->service->cap('unsure.enabled', false) && ! $this->isContactOnly()) {
             $sections[] = $this->unsureSection();
         }
@@ -80,9 +65,7 @@ class ServicePresenter
 
     private function buildOverlays(): array
     {
-        if ($this->isContactOnly()) {
-            return [];
-        }
+        if ($this->isContactOnly()) return [];
 
         $overlays = [];
 
@@ -94,10 +77,6 @@ class ServicePresenter
 
         return $overlays;
     }
-
-    // ═══════════════════════════════════════════
-    //  Hero
-    // ═══════════════════════════════════════════
 
     private function heroSection(): array
     {
@@ -141,16 +120,9 @@ class ServicePresenter
         ];
     }
 
-    // ═══════════════════════════════════════════
-    //  Offers
-    // ═══════════════════════════════════════════
-
     private function packageSections(): array
     {
-        if ($this->isContactOnly() || $this->packages->isEmpty()) {
-            return [];
-        }
-
+        if ($this->isContactOnly() || $this->packages->isEmpty()) return [];
         return [$this->buildPackagesSection()];
     }
 
@@ -158,10 +130,24 @@ class ServicePresenter
     {
         $packages    = $this->orderPackages($this->packages);
         $allFeatures = $this->collectFeatures($packages);
+        \logger()->info("allFeatures count: " . count($allFeatures));
         $showCompare = $this->service->cap('compare.enabled', false);
 
         $cards = $packages->map(function ($pkg) use ($showCompare) {
-            $features = is_array($pkg->features) ? $pkg->features : (json_decode($pkg->features, true) ?? []);
+            // ── العناصر: من service_items أولاً، وإلا من features القديم ──
+            $items = $pkg->serviceItems;
+            if ($items && $items->isNotEmpty()) {
+                $features = $items->map(function ($item) {
+                    $label = $item->name;
+                    if ($item->pivot->quantity_label) {
+                        $label .= ' (' . $item->pivot->quantity_label . ')';
+                    }
+                    return $label;
+                })->toArray();
+            } else {
+                $f = $pkg->features;
+                $features = is_array($f) ? $f : (json_decode($f, true) ?? []);
+            }
 
             return [
                 'id'            => $pkg->id,
@@ -205,75 +191,55 @@ class ServicePresenter
         ];
     }
 
-
-
-    // ═══════════════════════════════════════════
-    //  Testimonials (جديد)
-    // ═══════════════════════════════════════════
+    private function collectFeatures(Collection $packages): array
+    {
+        return $packages->flatMap(function ($pkg) {
+            $items = $pkg->serviceItems;
+            if ($items && $items->isNotEmpty()) {
+                return $items->pluck('name')->toArray();
+            }
+            $f = $pkg->features;
+            return is_array($f) ? $f : (json_decode($f, true) ?? []);
+        })->unique()->values()->toArray();
+    }
 
     private function testimonialsSection(): ?array
     {
-        $testimonials = Testimonial::where('status', 'approved')
-            ->latest()
-            ->take(6)
-            ->get();
-
-        if ($testimonials->isEmpty()) {
-            return null;
-        }
-
+        $testimonials = Testimonial::where('status', 'approved')->latest()->take(6)->get();
+        if ($testimonials->isEmpty()) return null;
         return [
             'view' => 'front.services.sections.testimonials',
             'data' => ['testimonials' => $testimonials],
         ];
     }
 
-    // ═══════════════════════════════════════════
-    //  FAQ (جديد)
-    // ═══════════════════════════════════════════
-
     private function faqSection(): ?array
     {
         $faqs = Faq::orderBy('sort_order')->get();
-
-        if ($faqs->isEmpty()) {
-            return null;
-        }
-
+        if ($faqs->isEmpty()) return null;
         return [
             'view' => 'front.services.sections.faq',
             'data' => ['faqs' => $faqs],
         ];
     }
 
-    // ═══════════════════════════════════════════
-    //  Unsure (جديد)
-    // ═══════════════════════════════════════════
-
     private function unsureSection(): array
     {
         $waText = $this->service->cap('cta.whatsapp_text');
-
         return [
             'view' => 'front.services.sections.unsure',
             'data' => [
                 'whatsappUrl' => $waText
                     ? 'https://wa.me/213540573518?text=' . urlencode($waText)
                     : 'https://wa.me/213540573518',
-                'bookingUrl'  => route('booking') . '?service_id=' . $this->service->id,
+                'bookingUrl' => route('booking') . '?service_id=' . $this->service->id,
             ],
         ];
     }
 
-    // ═══════════════════════════════════════════
-    //  Portfolio
-    // ═══════════════════════════════════════════
-
     private function portfolioSection(): ?array
     {
-        if (!$this->service->cap('portfolio.enabled', false)) {
-            return null;
-        }
+        if (!$this->service->cap('portfolio.enabled', false)) return null;
 
         $items = $this->service->portfolioItems()
             ->where('is_active', true)
@@ -283,9 +249,7 @@ class ServicePresenter
             ->limit($this->service->cap('portfolio.limit', 6))
             ->get();
 
-        if ($items->isEmpty()) {
-            return null;
-        }
+        if ($items->isEmpty()) return null;
 
         return [
             'view' => 'front.services.sections.portfolio',
@@ -298,10 +262,6 @@ class ServicePresenter
             ],
         ];
     }
-
-    // ═══════════════════════════════════════════
-    //  CTA
-    // ═══════════════════════════════════════════
 
     private function ctaSection(): array
     {
@@ -335,28 +295,17 @@ class ServicePresenter
         ];
     }
 
-    // ═══════════════════════════════════════════
-    //  Compare overlay
-    // ═══════════════════════════════════════════
-
     private function compareOverlay(): array
     {
         return [
             'view' => 'front.services.sections.compare',
-            'data' => [
-                'maxItems' => $this->service->cap('compare.max_items', 3),
-            ],
+            'data' => ['maxItems' => $this->service->cap('compare.max_items', 3)],
         ];
     }
-
-    // ═══════════════════════════════════════════
-    //  Booking overlay
-    // ═══════════════════════════════════════════
 
     private function bookingOverlay(): array
     {
         $allPackages = [];
-
         foreach ($this->packages as $pkg) {
             $allPackages[] = [
                 'id'             => $pkg->id,
@@ -370,22 +319,16 @@ class ServicePresenter
             ];
         }
 
-        $anyNeedsCalendar = $this->service->needsCalendar();
-
         return [
             'view' => 'front.services.sections.booking',
             'data' => [
                 'serviceId'     => $this->service->id,
                 'serviceSlug'   => $this->service->slug,
-                'needsCalendar' => $anyNeedsCalendar,
+                'needsCalendar' => $this->service->needsCalendar(),
                 'packagesJson'  => $allPackages,
             ],
         ];
     }
-
-    // ═══════════════════════════════════════════
-    //  Helpers
-    // ═══════════════════════════════════════════
 
     private function orderPackages(Collection $packages): Collection
     {
@@ -397,13 +340,5 @@ class ServicePresenter
             ->merge($others->slice(0, $half))
             ->when($featured, fn ($c) => $c->push($featured))
             ->merge($others->slice($half));
-    }
-
-    private function collectFeatures(Collection $packages): array
-    {
-        return $packages->flatMap(function ($pkg) {
-            $f = $pkg->features;
-            return is_array($f) ? $f : (json_decode($f, true) ?? []);
-        })->unique()->values()->toArray();
     }
 }

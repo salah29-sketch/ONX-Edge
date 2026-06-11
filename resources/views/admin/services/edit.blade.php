@@ -3,6 +3,7 @@
 @section('content')
 <div class="db-page-head">
     <h1 class="db-page-title">تعديل خدمة: {{ $service->name }}</h1>
+    <a href="{{ route('admin.services.items.index', $service) }}" class="db-btn-secondary ml-2">⚙ عناصر الخدمة</a>
     <a class="db-btn-primary" href="{{ route('admin.packages.index', ['service_id' => $service->id]) }}">
         <i class="fas fa-boxes"></i> باقات الخدمة
     </a>
@@ -151,6 +152,26 @@
                     <label class="flex items-center gap-2 cursor-pointer">
                         <input type="checkbox" name="show_wilaya_selector" value="1" {{ old('show_wilaya_selector', $service->show_wilaya_selector) ? 'checked' : '' }}>
                         إظهار حقل اختيار الولاية (حساب التنقل) في نموذج الحجز
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="cap_show_time" value="1" {{ old('cap_show_time', ($service->capabilities['show_time'] ?? false)) ? 'checked' : '' }}>
+                        إظهار حقل وقت البداية/النهاية في لوحة الأدمن
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="cap_show_venue" value="1" {{ old('cap_show_venue', ($service->capabilities['show_venue'] ?? false)) ? 'checked' : '' }}>
+                        إظهار حقل المكان/القاعة في لوحة الأدمن
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="cap_show_brand" value="1" {{ old('cap_show_brand', ($service->capabilities['show_brand'] ?? false)) ? 'checked' : '' }}>
+                        إظهار حقل اسم البراند في لوحة الأدمن
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="cap_show_budget" value="1" {{ old('cap_show_budget', ($service->capabilities['show_budget'] ?? false)) ? 'checked' : '' }}>
+                        إظهار حقل الميزانية في لوحة الأدمن
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" name="cap_show_deadline" value="1" {{ old('cap_show_deadline', ($service->capabilities['show_deadline'] ?? false)) ? 'checked' : '' }}>
+                        إظهار حقل موعد التسليم في لوحة الأدمن
                     </label>
                 </div>
             </div>

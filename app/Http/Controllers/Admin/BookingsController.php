@@ -110,9 +110,13 @@ class BookingsController extends Controller
         ];
 
         $serviceSlug = $booking->service?->slug;
-        if ($serviceSlug === 'events') {
+        $hasEventBooking = $booking->eventBooking !== null;
+        if ($hasEventBooking) {
             $rules += [
-                'event_date'            => 'required|date',
+                'event_date'   => 'nullable|date',
+                'start_time'   => 'nullable|date_format:H:i,H:i:s',
+                'end_time'     => 'nullable|date_format:H:i,H:i:s',
+                'venue_custom' => 'nullable|string|max:255',
             ];
         }
 
@@ -126,7 +130,7 @@ class BookingsController extends Controller
 
         $data = $request->validate($rules);
 
-        if ($serviceSlug === 'events' && isset($data['event_date'])) {
+        if ($hasEventBooking && isset($data['event_date'])) {
             if ($this->bookingService->isDateTakenForUpdate($data['event_date'], $booking->id)) {
                 return back()->withErrors([
                     'event_date' => 'هذا التاريخ محجوز بالفعل لحجز آخر.',
@@ -134,7 +138,22 @@ class BookingsController extends Controller
             }
         }
 
-        $booking->update($data);
+        $eventFields = ['start_time', 'end_time', 'venue_custom'];
+        $bookingData = array_diff_key($data, array_flip($eventFields));
+        $booking->update($bookingData);
+
+        if ($hasEventBooking) {
+            $eventData = array_filter(
+                array_intersect_key($data, array_flip($eventFields)),
+                fn($v) => $v !== null
+            );
+            if (!empty($eventData)) {
+                $booking->eventBooking()->updateOrCreate(
+                    ['booking_id' => $booking->id],
+                    $eventData
+                );
+            }
+        }
 
         return redirect()
             ->route('admin.bookings.show', $booking->id)

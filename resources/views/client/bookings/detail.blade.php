@@ -454,22 +454,9 @@ $serviceName = $booking->service?->name ?? ($isEventDetail ? 'تصوير فعا�
                     </div>
                 </div>
                 <div class="panel-body" style="display:flex;flex-direction:column;gap:10px;">
-                    <a href="{{ route('client.bookings.booking-pdf', $booking->id) }}" class="invoice-btn" target="_blank">
+                    <a href="{{ route('client.bookings.booking-pdf', $booking->id) }}" class="invoice-btn" >
                         <i class="bi bi-file-earmark-pdf"></i> تحميل PDF الحجز
                     </a>
-                    <a href="{{ route('client.bookings.invoice', $booking->id) }}" class="invoice-btn" target="_blank"
-                       style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.2);color:#f87171;">
-                        <i class="bi bi-download"></i> تحميل الفاتورة PDF
-                    </a>
-                    <a href="{{ route('client.bookings.summary', $booking->id) }}"
-                       class="invoice-btn"
-                       style="background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.25);color:#60a5fa;"
-                       target="_blank">
-                        <i class="bi bi-printer"></i> طباعة ملخص الحجز
-                    </a>
-                    <p style="font-size:11px;color:var(--muted);text-align:center;line-height:1.7;">
-                        تتضمن الفاتورة تفاصيل الحجز وسجل المدفوعات الكاملة
-                    </p>
                 </div>
             </div>
 

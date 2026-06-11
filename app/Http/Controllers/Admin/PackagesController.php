@@ -12,14 +12,13 @@ class PackagesController extends Controller
 {
     public function index(Request $request)
     {
-        // Require identical or similar permission as offers before, fallback to service_access
         abort_unless(Gate::allows('service_access'), 403);
 
         $packages = Package::with('service')
             ->orderBy('sort_order')
             ->orderBy('name')
             ->paginate(20);
-            
+
         return view('admin.packages.index', compact('packages'));
     }
 
@@ -51,10 +50,10 @@ class PackagesController extends Controller
             'sort_order'   => 'nullable|integer',
         ]);
 
-        $data['is_active']   = $request->boolean('is_active', true);
-        $data['is_featured'] = $request->boolean('is_featured', false);
+        $data['is_active']    = $request->boolean('is_active', true);
+        $data['is_featured']  = $request->boolean('is_featured', false);
         $data['is_buildable'] = $request->boolean('is_buildable', false);
-        $data['sort_order']  = (int) ($data['sort_order'] ?? 0);
+        $data['sort_order']   = (int) ($data['sort_order'] ?? 0);
 
         if (!empty($data['features'])) {
             $data['features'] = json_decode($data['features'], true);
@@ -70,8 +69,11 @@ class PackagesController extends Controller
     {
         abort_unless(Gate::allows('service_edit'), 403);
 
-        $services = Service::orderBy('sort_order')->pluck('name', 'id');
-        return view('admin.packages.edit', compact('package', 'services'));
+        $services    = Service::orderBy('sort_order')->pluck('name', 'id');
+        $serviceItems = $package->service->items()->where('is_active', true)->orderBy('sort_order')->get();
+        $selectedItems = $package->serviceItems()->orderBy('package_service_items.sort_order')->get(['service_items.id', 'service_items.name'])->toArray();
+
+        return view('admin.packages.edit', compact('package', 'services', 'serviceItems', 'selectedItems'));
     }
 
     public function update(Request $request, Package $package)
@@ -94,16 +96,25 @@ class PackagesController extends Controller
             'sort_order'   => 'nullable|integer',
         ]);
 
-        $data['is_active']   = $request->boolean('is_active', true);
-        $data['is_featured'] = $request->boolean('is_featured', false);
+        $data['is_active']    = $request->boolean('is_active', true);
+        $data['is_featured']  = $request->boolean('is_featured', false);
         $data['is_buildable'] = $request->boolean('is_buildable', false);
-        $data['sort_order']  = (int) ($data['sort_order'] ?? 0);
+        $data['sort_order']   = (int) ($data['sort_order'] ?? 0);
 
         if (!empty($data['features']) && is_string($data['features'])) {
             $data['features'] = json_decode($data['features'], true);
         }
 
         $package->update($data);
+
+        // حفظ العناصر المختارة
+        $itemIds = json_decode($request->input('service_items_json', '[]'), true) ?? [];
+        $sync = [];
+        foreach ($itemIds as $index => $itemId) {
+            if ($itemId) $sync[$itemId] = ['sort_order' => $index, 'quantity_label' => null];
+        }
+        $package->serviceItems()->sync($sync);
+
         return redirect()->route('admin.packages.index')->with('success', 'تم التحديث بنجاح.');
     }
 

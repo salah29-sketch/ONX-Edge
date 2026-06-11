@@ -8,57 +8,81 @@
 @section('has_hero', true)
 @section('content')
 
-{{-- HERO --}}
-<section class="relative isolate overflow-hidden border-b border-white/10">
-    <div class="absolute inset-0 -z-10">
-        @php
-            // FIX #1: fallback يدعم YouTube thumbnail إن لم توجد صورة
-            $heroImage = null;
-            if ($heroItem) {
-                if (!empty($heroItem->image_path)) {
-                    $heroImage = asset($heroItem->image_path);
-                } elseif (!empty($heroItem->youtube_video_id)) {
-                    $heroImage = 'https://img.youtube.com/vi/' . $heroItem->youtube_video_id . '/hqdefault.jpg';
-                }
-            }
-            $heroImage ??= asset('img/events.jpg');
-        @endphp
-        <img loading="eager" src="{{ $heroImage }}" alt="ONX Portfolio" class="h-full w-full object-cover opacity-20">
-        <div class="absolute inset-0 bg-gradient-to-b from-black/30 via-black/80 to-[#050505]"></div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(255,106,0,0.14),transparent_28%),radial-gradient(circle_at_20%_80%,rgba(255,106,0,0.06),transparent_26%)]"></div>
+{{-- HERO SLIDESHOW --}}
+<section id="heroSection" style="height:100vh;min-height:600px;position:relative;overflow:hidden;border-bottom:1px solid rgba(255,255,255,0.12)">
+
+    @php
+        $slides = [];
+        if (isset($heroImages) && $heroImages->count()) {
+            foreach ($heroImages as $img) { $slides[] = asset($img); }
+        } elseif ($heroItem && $heroItem->image_path) {
+            $slides[] = asset($heroItem->image_path);
+        } else {
+            $slides[] = asset('img/events.jpg');
+        }
+    @endphp
+
+    @foreach($slides as $i => $slide)
+    <div class="hslide" style="position:absolute;inset:0;opacity:{{ $i===0?1:0 }};transition:opacity 1s ease;z-index:{{ $i===0?1:0 }}">
+        <img src="{{ $slide }}" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
     </div>
+    @endforeach
 
-    <div class="mx-auto grid min-h-[60vh] max-w-7xl items-center gap-8 px-6 py-14 lg:grid-cols-[1.02fr_.98fr] lg:gap-10 lg:px-8 lg:py-16">
-        <div class="order-1">
-            <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] font-bold text-white/60 opacity-0 backdrop-blur animate-fade-in-up">
-                <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
-                Portfolio
-            </div>
-            <h1 class="max-w-xl text-lg font-black leading-[1.25] text-white opacity-0 sm:text-xl lg:text-2xl animate-fade-in-up animate-delay-100">
-                أعمال <span class="text-orange-500">تُرى</span> وتُتذكر
-            </h1>
-            <p class="mt-3 max-w-lg text-[11px] leading-6 text-white/60 opacity-0 sm:text-xs animate-fade-in-up animate-delay-200">
-                نماذج من مشاريعنا في الإعلانات، الفعاليات، والتجارب البصرية.
-            </p>
-            <div class="mt-5 flex flex-wrap gap-3 opacity-0 animate-fade-in-up animate-delay-300">
-                <a href="#portfolio-grid" class="inline-flex items-center justify-center rounded-full bg-orange-500 px-5 py-2 text-[11px] font-black text-black transition duration-300 hover:-translate-y-1 hover:bg-orange-400 hover:shadow-[0_0_30px_rgba(249,115,22,0.3)] active:scale-[0.98]">استكشف الأعمال</a>
-                <a href="/booking" class="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/5 px-5 py-2 text-[11px] font-extrabold text-white transition duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:bg-orange-500/10 active:scale-[0.98]">ابدأ مشروعك</a>
-            </div>
+    <div style="position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.4) 50%,rgba(0,0,0,0.1) 100%)"></div>
+    <div style="position:absolute;inset:0;z-index:2;background:radial-gradient(circle at 85% 85%,rgba(255,106,0,0.13),transparent 45%)"></div>
+
+    <div style="position:absolute;inset:0;z-index:10;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-end;padding:0 5% 4rem 5%;text-align:right">
+        <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);border-radius:999px;padding:5px 14px;margin-bottom:16px;backdrop-filter:blur(10px)">
+            <span style="width:6px;height:6px;border-radius:50%;background:#f97316;display:inline-block"></span>
+            <span style="color:rgba(255,255,255,0.55);font-size:10px;font-weight:700;letter-spacing:3px">PORTFOLIO</span>
         </div>
-
-        <div class="order-2 opacity-0 animate-fade-in-up animate-delay-300">
-            <div class="relative mx-auto max-w-lg">
-                <div class="absolute -inset-8 rounded-[38px] bg-orange-500/10 blur-3xl"></div>
-                <div class="relative overflow-hidden rounded-[24px] border border-white/10 bg-white/5 shadow-[0_24px_80px_rgba(0,0,0,0.5)] backdrop-blur-xl">
-                    <img loading="eager" src="{{ $heroImage }}" alt="ONX Portfolio" class="h-[320px] w-full object-cover opacity-95 lg:h-[400px]">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black via-black/20 to-transparent"></div>
-                    <div class="absolute left-0 right-0 top-0 flex items-start justify-between p-3.5">
-                        <div class="inline-flex rounded-full border border-white/10 bg-black/35 px-2.5 py-1 text-[10px] font-extrabold tracking-[0.18em] text-white/70 backdrop-blur">ONX FRAME</div>
-                    </div>
-                </div>
-            </div>
+        <h1 style="color:white;font-size:clamp(1.8rem,5vw,4rem);font-weight:900;line-height:1.15;margin:0 0 12px;max-width:600px">
+            أعمال <span style="color:#f97316">تُرى</span> وتُذكر
+        </h1>
+        <p style="color:rgba(255,255,255,0.58);font-size:clamp(13px,1.4vw,16px);line-height:1.85;margin:0 0 36px;max-width:460px">
+            نماذج من مشاريعنا في الإعلانات، الفعاليات، والتجارب البصرية.
+        </p>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end">
+            <a href="/booking" style="background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.2);padding:14px 30px;border-radius:999px;font-size:13px;font-weight:700;text-decoration:none;backdrop-filter:blur(10px)">ابدأ مشروعك</a>
+            <a href="#portfolio-grid" style="background:#f97316;color:#000;padding:14px 30px;border-radius:999px;font-size:13px;font-weight:900;text-decoration:none">استكشف الأعمال</a>
         </div>
     </div>
+
+    @if(count($slides) > 1)
+    <div style="position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;display:flex;gap:8px;align-items:center">
+        @foreach($slides as $i => $s)
+        <button onclick="heroGoTo({{ $i }})" data-dot="{{ $i }}" style="height:3px;border-radius:2px;border:none;cursor:pointer;transition:all .4s;padding:0;background:{{ $i===0?'#f97316':'rgba(255,255,255,0.3)' }};width:{{ $i===0?'28px':'8px' }}"></button>
+        @endforeach
+    </div>
+    <button onclick="heroPrev()" style="position:absolute;right:24px;top:50%;transform:translateY(-50%);z-index:10;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.4);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .25s" onmouseover="this.style.background='white';this.style.color='black'" onmouseout="this.style.background='rgba(0,0,0,0.4)';this.style.color='white'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+    <button onclick="heroNext()" style="position:absolute;left:24px;top:50%;transform:translateY(-50%);z-index:10;width:48px;height:48px;border-radius:50%;border:1.5px solid rgba(255,255,255,0.25);background:rgba(0,0,0,0.4);color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);transition:all .25s" onmouseover="this.style.background='white';this.style.color='black'" onmouseout="this.style.background='rgba(0,0,0,0.4)';this.style.color='white'">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+    </button>
+    @endif
+
+    <script>
+    (function(){
+        var slides = document.querySelectorAll('.hslide');
+        var dots   = document.querySelectorAll('[data-dot]');
+        var total  = slides.length;
+        var cur    = 0;
+        var timer;
+        function goTo(n) {
+            slides[cur].style.opacity='0'; slides[cur].style.zIndex='0';
+            dots[cur] && (dots[cur].style.width='8px', dots[cur].style.background='rgba(255,255,255,0.3)');
+            cur = (n+total)%total;
+            slides[cur].style.opacity='1'; slides[cur].style.zIndex='1';
+            dots[cur] && (dots[cur].style.width='28px', dots[cur].style.background='#f97316');
+        }
+        window.heroGoTo=goTo;
+        window.heroNext=function(){ clearInterval(timer); goTo(cur+1); start(); };
+        window.heroPrev=function(){ clearInterval(timer); goTo(cur-1); start(); };
+        function start(){ timer=setInterval(function(){ goTo(cur+1); },5000); }
+        if(total>1) start();
+    })();
+    </script>
 </section>
 
 {{-- REELS --}}
@@ -79,7 +103,9 @@
 if ($reel->image_path) {
     $thumb = asset($reel->image_path);
 } elseif ($reel->reel_source === 'youtube' && $reel->youtube_video_id) {
-    $thumb = 'https://img.youtube.com/vi/' . $reel->youtube_video_id . '/hqdefault.jpg';
+    preg_match('/(?:shorts\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $reel->youtube_video_id, $m);
+    $ytId = $m[1] ?? $reel->youtube_video_id;
+    $thumb = 'https://img.youtube.com/vi/' . $ytId . '/hqdefault.jpg';
 }
                 $srcLabel = $reel->reel_source === 'youtube' ? 'YouTube' : 'Video';
                 $catName  = $reel->categoryRelation?->name ?? '—';
@@ -91,7 +117,11 @@ if ($reel->image_path) {
                 style="scroll-snap-align: start; width: calc(50% - 8px);"
                 data-reel-source="{{ $reel->reel_source }}"
                 data-video-path="{{ $reel->reel_source === 'mp4' && $reel->video_path ? asset($reel->video_path) : '' }}"
-                data-youtube-id="{{ $reel->youtube_video_id ?? '' }}"
+                @php
+    preg_match('/(?:shorts\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/', $reel->youtube_video_id ?? '', $ytMatch);
+    $cleanYtId = $ytMatch[1] ?? ($reel->youtube_video_id ?? '');
+@endphp
+data-youtube-id="{{ $cleanYtId }}"
                 data-title="{{ e($reel->title) }}"
                 data-caption="{{ e($reel->caption ?? '') }}"
                 data-cat="{{ $catName }}"
@@ -490,8 +520,18 @@ document.addEventListener('DOMContentLoaded', function () {
     let allViewerItems = [];
     let currentIndex   = 0;
 
-    function buildMedia(data) {
-        const { mediaType, youtubeId, image, videoPath, reelSource } = data;
+    function extractYoutubeId(url) {
+    if (!url) return '';
+    var match = url.match(/(?:shorts\/|v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    return match ? match[1] : url;
+}
+
+function buildMedia(data) {
+    const { mediaType, image, videoPath, reelSource } = data;
+    let youtubeId = data.youtubeId;
+    if (youtubeId && youtubeId.length > 11) {
+        youtubeId = extractYoutubeId(youtubeId);
+    }
 
         if (reelSource === 'mp4' && videoPath) {
             viewerType.textContent = 'Reels';
