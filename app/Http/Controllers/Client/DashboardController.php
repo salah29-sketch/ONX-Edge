@@ -165,7 +165,7 @@ class DashboardController extends Controller
         if ((int)$booking->client_id !== (int)$client->id) abort(404);
         $booking->load(['photos', 'payments', 'visibleFiles', 'subscription']);
         $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
-        $booking->load(['package']);
+        $booking->load(['package.serviceItems', 'items']);
         $idx = $client->bookings()->orderBy('created_at')->orderBy('id')->pluck('id')->search($booking->id);
         $clientOrderNumber = $idx !== false ? $idx + 1 : 1;
 
@@ -294,7 +294,7 @@ class DashboardController extends Controller
 {
     $client = $this->client();
     if ((int)$booking->client_id !== (int)$client->id) abort(404);
-    $booking->load(['payments', 'package', 'eventBooking.venue']);
+    $booking->load(['payments', 'package', 'eventBooking.venue', 'items']);
     $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
         $booking->load(['package']);
     $companySettings = \App\Models\Content\Company::first();
@@ -317,7 +317,7 @@ class DashboardController extends Controller
         $client = $this->client();
         if ((int)$booking->client_id !== (int)$client->id) abort(404);
         $meta = app(\App\Services\BookingService::class)->getBookingMeta($booking);
-        $booking->load(['package']);
+        $booking->load(['package', 'items']);
         $clientLogin    = $client->email ?: $client->phone;
         $clientPassword = '— (لديك حساب في منطقة العملاء)';
         $pdf = Pdf::loadView('front.booking.pdf', [

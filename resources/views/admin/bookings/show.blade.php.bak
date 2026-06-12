@@ -12,12 +12,6 @@
         'completed'   => ['label' => 'مكتمل', 'class' => 'db-badge-completed'],
         'cancelled'   => ['label' => 'ملغى', 'class' => 'db-badge-cancelled'],
     ];
-
-$adminAddonsTotal = $booking->items->where('item_type', 'addon')->sum('unit_price');
-$adminOriginalPrice = (float)($booking->package?->price ?? 0) + $adminAddonsTotal;
-    $adminFinalPrice    = (float)($booking->final_price ?? $booking->total_price ?? 0);
-    $adminHasDiscount   = $adminFinalPrice > 0 && $adminOriginalPrice > $adminFinalPrice;
-    $adminDiscount      = $adminOriginalPrice - $adminFinalPrice;
 @endphp
 
 <div class="db-page-head">
@@ -121,13 +115,9 @@ $adminOriginalPrice = (float)($booking->package?->price ?? 0) + $adminAddonsTota
                     <div class="db-detail-label">السعر الإجمالي (DA)</div>
                     <div class="db-detail-value">
                         <span x-show="!editing">
-@if($adminHasDiscount)
-    <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
-        <span style="text-decoration:line-through;color:#9ca3af;font-size:12px;font-weight:400;">{{ number_format($adminOriginalPrice, 0) }}</span>
-        <span style="color:#16a34a;font-size:12px;font-weight:700;">-{{ number_format($adminDiscount, 0) }}</span>
-    </div>
-@endif
-<span style="font-size:18px;font-weight:700;">{{ $adminFinalPrice > 0 ? number_format($adminFinalPrice, 0) : '—' }}</span>
+                            {{ $booking->final_price
+                                ? number_format($booking->final_price, 0)
+                                : ($booking->total_price ? number_format($booking->total_price, 0) : '—') }}
                         </span>
                         <input x-show="editing" x-cloak type="number" name="final_price"
                                value="{{ $booking->final_price ?? $booking->total_price }}"
@@ -277,13 +267,10 @@ $adminOriginalPrice = (float)($booking->package?->price ?? 0) + $adminAddonsTota
             <ul id="added-addons-list" style="list-style:none;padding:0;margin:0;">
                 @foreach($booking->items->where('item_type', 'addon') as $addonItem)
                 <li id="addon-item-{{ $addonItem->item_id }}" style="padding:8px 0;border-bottom:1px solid var(--card-border);color:var(--tx-primary);font-size:14px;display:flex;justify-content:space-between;align-items:center;">
-    <span>
-        <span style="color:var(--onx-orange);margin-left:8px;">+</span>
-        {{ $addonItem->item_name }}
-        @if(!$addonItem->affects_price)
-            <span style="background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:700;border-radius:6px;padding:2px 6px;margin-right:6px;">لا يؤثر على السعر</span>
-        @endif
-    </span>
+                    <span>
+                        <span style="color:var(--onx-orange);margin-left:8px;">+</span>
+                        {{ $addonItem->item_name }}
+                    </span>
                     <div style="display:flex;gap:8px;align-items:center;">
                         <span style="color:#16a34a;font-weight:700;">{{ number_format($addonItem->unit_price, 0) }} دج</span>
                         <button onclick="removeAddon({{ $addonItem->item_id }}, this)" style="background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;padding:3px 8px;color:#dc2626;cursor:pointer;font-size:11px;"><i class="fas fa-times"></i></button>
@@ -302,20 +289,16 @@ $adminOriginalPrice = (float)($booking->package?->price ?? 0) + $adminAddonsTota
             <div x-show="showAddons" x-cloak x-transition class="mt-3">
                 <div id="addon-list" style="display:flex;flex-direction:column;gap:8px;">
                     @foreach($addonItems as $addon)
-                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--card-border);border-radius:10px;background:var(--bg-card);flex-wrap:wrap;gap:8px;">
-    <span style="font-size:14px;color:var(--tx-primary);">{{ $addon->name }}</span>
-    <div style="display:flex;align-items:center;gap:12px;">
-        <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx-secondary,#6b7280);cursor:pointer;white-space:nowrap;">
-            <input type="checkbox" id="affects-price-{{ $addon->id }}" checked style="width:14px;height:14px;cursor:pointer;">
-            يُضاف للسعر الإجمالي
-        </label>
-        <span style="color:#16a34a;font-weight:700;font-size:13px;">+ {{ number_format($addon->addon_price) }} دج</span>
-        <button type="button" onclick="addAddon({{ $addon->id }}, '{{ addslashes($addon->name) }}', {{ $addon->addon_price }}, this)"
-            style="background:var(--onx-orange);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">
-            <i class="fas fa-plus"></i> إضافة
-        </button>
-    </div>
-</div>
+                    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border:1px solid var(--card-border);border-radius:10px;background:var(--bg-card);">
+                        <span style="font-size:14px;color:var(--tx-primary);">{{ $addon->name }}</span>
+                        <div style="display:flex;align-items:center;gap:12px;">
+                            <span style="color:#16a34a;font-weight:700;font-size:13px;">+ {{ number_format($addon->addon_price) }} دج</span>
+                            <button type="button" onclick="addAddon({{ $addon->id }}, '{{ addslashes($addon->name) }}', {{ $addon->addon_price }}, this)"
+                                style="background:var(--onx-orange);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;">
+                                <i class="fas fa-plus"></i> إضافة
+                            </button>
+                        </div>
+                    </div>
                     @endforeach
                 </div>
             </div>
@@ -570,12 +553,10 @@ const CSRF = "{{ csrf_token() }}";
 function addAddon(itemId, itemName, itemPrice, btn) {
     btn.disabled = true;
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    const affectsCheckbox = document.getElementById('affects-price-' + itemId);
-    const affectsPrice = affectsCheckbox ? affectsCheckbox.checked : true;
     fetch(ADDON_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF },
-        body: JSON.stringify({ addon_item_id: itemId, affects_price: affectsPrice })
+        body: JSON.stringify({ addon_item_id: itemId })
     })
     .then(r => r.json())
     .then(data => {
@@ -586,11 +567,11 @@ function addAddon(itemId, itemName, itemPrice, btn) {
                 const li = document.createElement('li');
                 li.id = 'addon-item-' + itemId;
                 li.style = 'padding:8px 0;border-bottom:1px solid var(--card-border);color:var(--tx-primary);font-size:14px;display:flex;justify-content:space-between;align-items:center;';
-                const badge = data.item.affects_price ? '' : ' <span style="background:#f3f4f6;color:#6b7280;font-size:10px;font-weight:700;border-radius:6px;padding:2px 6px;margin-right:6px;">لا يؤثر على السعر</span>';
-                li.innerHTML = '<span><span style="color:var(--onx-orange);margin-left:8px;">+</span>' + itemName + badge + '</span>'
+                li.innerHTML = '<span><span style="color:var(--onx-orange);margin-left:8px;">+</span>' + itemName + '</span>'
                     + '<div style="display:flex;gap:8px;align-items:center;">'
                     + '<span style="color:#16a34a;font-weight:700;">' + Number(itemPrice).toLocaleString() + ' دج</span>'
-                    + '<button onclick="removeAddon(' + itemId + ', this)" style="background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;padding:3px 8px;color:#dc2626;cursor:pointer;font-size:11px;"><i class="fas fa-times"></i></button>' + '</div>';
+                    + '<button onclick="removeAddon(' + itemId + ', this)" style="background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;padding:3px 8px;color:#dc2626;cursor:pointer;font-size:11px;"><i class="fas fa-times"></i></button>'
+                    + '</div>';
                 addedList.appendChild(li);
                 document.getElementById('added-addons-section').style.display = 'block';
             }
@@ -627,7 +608,7 @@ function removeAddon(itemId, btn) {
                     div.innerHTML = '<span style="font-size:14px;color:var(--tx-primary);">' + addon.name + '</span>'
                         + '<div style="display:flex;align-items:center;gap:12px;">'
                         + '<span style="color:#16a34a;font-weight:700;font-size:13px;">+ ' + Number(addon.price).toLocaleString() + ' دج</span>'
-                        + `<button type="button" onclick="addAddon(${addon.id}, '${String(addon.name).replace(/'/g, "\\'")}', ${addon.price}, this)" style="background:var(--onx-orange);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;"><i class="fas fa-plus"></i> إضافة</button>`
+                        + '<button type="button" onclick="addAddon(' + addon.id + ', '' + addon.name.replace(/'/g, "\'") + '', ' + addon.price + ', this)" style="background:var(--onx-orange);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:700;cursor:pointer;"><i class='fas fa-plus'></i> إضافة</button>'
                         + '</div>';
                     addonList.appendChild(div);
                 }

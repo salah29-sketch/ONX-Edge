@@ -27,7 +27,7 @@
             {{-- الإجمالي --}}
             <div style="background:#f8f9fb;border:1px solid #e5e7eb;border-radius:14px;padding:20px 16px;text-align:center;" class="payment-card-total">
                 <div style="font-size:12px;color:#94a3b8;font-weight:700;margin-bottom:8px;letter-spacing:.04em;">الإجمالي</div>
-                <div style="font-size:22px;font-weight:900;color:#1e293b;line-height:1;">{{ number_format($booking->total_price, 0) }}</div>
+                <div style="font-size:22px;font-weight:900;color:#1e293b;line-height:1;" class="payment-total-display">{{ number_format($booking->total_price, 0) }}</div>
                 <div style="font-size:13px;font-weight:700;color:#64748b;margin-top:4px;">DA</div>
             </div>
             {{-- مدفوع --}}

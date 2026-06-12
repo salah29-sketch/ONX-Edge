@@ -65,6 +65,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin.audit'])->gro
     Route::get('bookings/{booking}/pdf',               [BookingsController::class, 'pdf'])->name('bookings.pdf');
     Route::patch('bookings/{booking}/status',          [BookingsController::class, 'updateStatus'])->name('bookings.updateStatus');
     Route::patch('bookings/{booking}/details',         [BookingsController::class, 'updateDetails'])->name('bookings.updateDetails');
+    Route::post('bookings/{booking}/addons',           [BookingsController::class, 'addAddon'])->name('bookings.addAddon');
+    Route::delete('bookings/{booking}/addons/{item}',  [BookingsController::class, 'removeAddon'])->name('bookings.removeAddon');
     Route::patch('bookings/{booking}/final-video',   [BookingsController::class, 'updateFinalVideo'])->name('bookings.finalVideo');
     Route::resource('bookings', BookingsController::class)->only(['index', 'show', 'destroy']);
     Route::post('bookings/photos', [\App\Http\Controllers\Admin\BookingPhotosController::class, 'store'])->name('bookings.photos.store');

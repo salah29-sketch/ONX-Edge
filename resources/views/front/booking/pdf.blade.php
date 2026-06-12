@@ -52,7 +52,7 @@
         .value { display: block; font-size: 10px; font-weight: bold; color: #161616; word-break: break-word; }
         .money-table { width: 100%; border-collapse: separate; border-spacing: 8px 0; }
         .money-table td { width: 33.33%; border: none; padding: 0; vertical-align: top; }
-        .money-box { border: 1.3px solid #262626; background: #fff; text-align: center; padding: 10px 8px; min-height: 64px; }
+        .money-box { border: 1.3px solid #262626; background: #fff; text-align: center; padding: 10px 8px; height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .money-box.total { background: #fff6ef; border-color: #d65f13; }
         .money-box.paid  { background: #f0fdf4; border-color: #16a34a; }
         .money-box.remaining { background: #fef2f2; border-color: #dc2626; }
@@ -217,11 +217,34 @@
     </div>
     @endif
 
+    @php
+        $addonItemsList = $booking->items->where('item_type', 'addon');
+    @endphp
+    @if($addonItemsList->isNotEmpty())
+    <div class="section">
+        <p class="section-title">Services additionnels</p>
+        <table class="features-table" style="width:100%;">
+            <tbody>
+            @foreach($addonItemsList as $addon)
+                <tr>
+                    <td>&#10003; {{ $addon->item_name }}</td>
+                    <td style="text-align:left;width:120px;">{{ number_format($addon->unit_price, 0) }} DA</td>
+                </tr>
+            @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
+
     {{-- Montants --}}
     @php
         $paid      = $booking->paidAmount();
         $total     = (float)($booking->final_price ?? $booking->total_price ?? 0);
         $remaining = $booking->remainingAmount();
+        $addonsTotalPdf = $booking->items->where('item_type', 'addon')->sum('unit_price');
+        $originalPricePdf = (float)($booking->package?->price ?? 0) + $addonsTotalPdf;
+        $hasDiscountPdf   = $total > 0 && $originalPricePdf > $total;
+        $discountPdf      = $originalPricePdf - $total;
     @endphp
     <div class="section">
         <p class="section-title">Montant</p>
@@ -231,8 +254,14 @@
                     <div class="money-box total">
                         <span class="money-label">Prix total</span>
                         <div class="money-value">
-                            @if($total > 0){{ number_format($total, 0) }} DA
-                            @else A confirmer @endif
+                            @if($hasDiscountPdf)
+    <div style="display:flex;align-items:center;justify-content:center;gap:5px;margin-bottom:3px;">
+        <span style="text-decoration:line-through;color:#9a9a9a;font-size:8px;font-weight:normal;">{{ number_format($originalPricePdf, 0) }} DA</span>
+        <span style="color:#16a34a;font-size:8px;font-weight:bold;">-{{ number_format($discountPdf, 0) }} DA</span>
+    </div>
+    {{ number_format($total, 0) }} DA
+@elseif($total > 0){{ number_format($total, 0) }} DA
+@else A confirmer @endif
                         </div>
                         <span class="money-sub">Montant global</span>
                     </div>

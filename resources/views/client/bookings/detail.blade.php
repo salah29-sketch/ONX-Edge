@@ -71,9 +71,17 @@
 .info-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
 .info-value { font-size: 15px; font-weight: 700; color: #1f2937; }
 
+/* ─ Package Items ─ */
+.package-items-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; }
+.package-item-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; color: #1f2937; }
+.package-item-row:last-child { border-bottom: none; }
+.package-item-name { display: flex; align-items: center; }
+.package-item-price { font-size: 13px; font-weight: 700; color: #16a34a; white-space: nowrap; }
+.package-item-included { text-decoration: line-through; color: var(--muted); font-weight: 600; }
+
 /* ─ Payments ─ */
 .pay-amounts { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-.pay-amount-box { background: #f9fafb; border: 1px solid var(--border); border-radius: 14px; padding: 14px; text-align: center; }
+.pay-amount-box { background: #f9fafb; border: 1px solid var(--border); border-radius: 14px; padding: 14px; text-align: center; height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .pay-amount-label { font-size: 11px; color: var(--muted); font-weight: 700; margin-bottom: 6px; }
 .pay-amount-value { font-size: 18px; font-weight: 900; }
 .pay-bar-wrap { background: #f3f4f6; border-radius: 999px; height: 8px; overflow: hidden; margin-bottom: 8px; }
@@ -140,6 +148,9 @@
 .client-portal-dark .info-label { color: rgba(255,255,255,.35) !important; }
 .client-portal-dark .info-value { color: #fff !important; }
 
+.client-portal-dark .package-item-row { border-color: rgba(255,255,255,.05) !important; color: #fff !important; }
+.client-portal-dark .package-item-included { color: rgba(255,255,255,.35) !important; }
+
 .client-portal-dark .pay-amount-box   { background: #1e2736 !important; border-color: rgba(255,255,255,.05) !important; }
 .client-portal-dark .pay-amount-label { color: rgba(255,255,255,.35) !important; }
 .client-portal-dark .pay-bar-wrap     { background: #0c0f14 !important; }
@@ -183,6 +194,13 @@
     {{-- Header --}}
     @php $isEventDetail = in_array($booking->booking_type, ['event', 'appointment']);
 $serviceName = $booking->service?->name ?? ($isEventDetail ? 'تصوير فعاليات' : 'خدمة');
+
+// حساب السعر الأصلي/الخصم — يُستخدم في "محتويات الباقة" و"المدفوعات"
+$addonsTotalClient   = $booking->items->where('item_type', 'addon')->sum('unit_price');
+$originalPriceClient = (float)($booking->package?->price ?? 0) + $addonsTotalClient;
+$finalPriceClient    = (float)($booking->final_price ?? $booking->total_price ?? 0);
+$hasDiscountClient   = $finalPriceClient > 0 && $originalPriceClient > $finalPriceClient;
+$discountClient      = $originalPriceClient - $finalPriceClient;
     @endphp
     <div class="portal-header" style="border-inline-start: 4px solid {{ $isEventDetail ? 'var(--event-primary, #f59e0b)' : 'var(--ads-primary, #3b82f6)' }}; padding-inline-start: 16px; border-radius: 14px; margin-bottom: 24px; border-bottom: none; background: transparent;">
         <div>
@@ -304,6 +322,45 @@ $serviceName = $booking->service?->name ?? ($isEventDetail ? 'تصوير فعا�
                 </div>
             </div>
 
+            {{-- محتويات الباقة --}}
+            @if($booking->package)
+            <div class="panel">
+                <div class="panel-head">
+                    <div class="panel-title">
+                        <div class="panel-icon" style="background:rgba(34,197,94,.12);color:#22c55e;">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        محتويات الباقة
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <ul class="package-items-list">
+                        @foreach($booking->package->serviceItems as $item)
+                            <li class="package-item-row">
+                                <span class="package-item-name">
+                                    <i class="bi bi-check-circle-fill" style="color:#22c55e;margin-left:8px;"></i>
+                                    {{ $item->name }}{{ $item->pivot->quantity_label ? ' ('.$item->pivot->quantity_label.')' : '' }}
+                                </span>
+                            </li>
+                        @endforeach
+                        @foreach($booking->items->where('item_type', 'addon') as $addonItem)
+                            <li class="package-item-row">
+                                <span class="package-item-name">
+                                    <i class="bi bi-plus-circle-fill" style="color:#f59e0b;margin-left:8px;"></i>
+                                    {{ $addonItem->item_name }}
+                                </span>
+                                @if($hasDiscountClient)
+                                    <span class="package-item-price package-item-included">{{ number_format($addonItem->unit_price, 0) }} DA</span>
+                                @else
+                                    <span class="package-item-price">+ {{ number_format($addonItem->unit_price, 0) }} DA</span>
+                                @endif
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+            @endif
+
             {{-- الملفات --}}
             <div class="panel">
                 <div class="panel-head">
@@ -382,8 +439,14 @@ $serviceName = $booking->service?->name ?? ($isEventDetail ? 'تصوير فعا�
                         <div class="pay-amounts">
                             <div class="pay-amount-box">
                                 <div class="pay-amount-label">الإجمالي</div>
-                                <div class="pay-amount-value" style="color:#1f2937;">
-                                    {{ number_format($booking->total_price, 0) }}
+                                <div class="pay-amount-value" style="color:#6366f1;">
+                                    @if($hasDiscountClient)
+                                        <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:2px;">
+                                            <span style="text-decoration:line-through;color:var(--muted);font-size:12px;font-weight:600;">{{ number_format($originalPriceClient, 0) }}</span>
+                                            <span style="color:#16a34a;font-size:12px;font-weight:700;">-{{ number_format($discountClient, 0) }}</span>
+                                        </div>
+                                    @endif
+                                    {{ number_format($finalPriceClient, 0) }}
                                     <span style="font-size:10px;font-weight:700;color:var(--muted);">DA</span>
                                 </div>
                             </div>

@@ -69,11 +69,13 @@ class BookingsController extends Controller
 
         // العناصر المتاحة كإضافات (لها addon_price وليست في الباقة)
         $packageItemIds = $booking->package?->serviceItems->pluck('id')->toArray() ?? [];
+        $addedAddonIds = $booking->items()->where('item_type', 'addon')->pluck('item_id')->toArray();
+        $excludeIds = array_merge($packageItemIds, $addedAddonIds);
         $addonItems = $booking->service_id
             ? \App\Models\Service\ServiceItem::where('service_id', $booking->service_id)
                 ->whereNotNull('addon_price')
                 ->where('is_active', true)
-                ->whereNotIn('id', $packageItemIds)
+                ->whereNotIn('id', $excludeIds)
                 ->orderBy('sort_order')
                 ->get()
             : collect();
@@ -183,9 +185,57 @@ class BookingsController extends Controller
             }
         }
 
+       // إذا حدد الأدمن سعراً يدوياً، طبّقه على total_price أيضاً
+        if (isset($data['final_price'])) {
+            $booking->update(['total_price' => $data['final_price']]);
+        } else {
+            $basePrice = $booking->package?->price ?? 0;
+            $addonsTotal = $booking->items()->where('item_type', 'addon')->sum('unit_price');
+            $newTotal = $basePrice + $addonsTotal;
+            $booking->update(['total_price' => $newTotal, 'final_price' => $newTotal]);
+        }
+
         return redirect()
             ->route('admin.bookings.show', $booking->id)
             ->with('message', 'تم تحديث تفاصيل الحجز بنجاح.');
+    }
+
+    public function addAddon(Request $request, Booking $booking)
+    {
+        abort_unless(Gate::allows('booking_edit'), 403);
+        $data = $request->validate([
+            'addon_item_id' => 'required|integer|exists:service_items,id',
+        ]);
+        $item = \App\Models\Service\ServiceItem::findOrFail($data['addon_item_id']);
+        $booking->items()->updateOrCreate(
+            ['item_type' => 'addon', 'item_id' => $item->id],
+            ['item_name' => $item->name, 'quantity' => 1, 'unit_price' => $item->addon_price, 'total_price' => $item->addon_price]
+        );
+        $basePrice = $booking->package?->price ?? 0;
+        $addonsTotal = $booking->items()->where('item_type', 'addon')->sum('unit_price');
+        $newTotal = $basePrice + $addonsTotal;
+        $booking->update(['total_price' => $newTotal, 'final_price' => $newTotal]);
+        return response()->json([
+            'success' => true,
+            'item' => ['id' => $item->id, 'name' => $item->name, 'price' => $item->addon_price],
+            'total_price' => $newTotal,
+        ]);
+    }
+
+    public function removeAddon(Request $request, Booking $booking, $itemId)
+    {
+        abort_unless(Gate::allows('booking_edit'), 403);
+        $booking->items()->where('item_type', 'addon')->where('item_id', $itemId)->delete();
+        $basePrice = $booking->package?->price ?? 0;
+        $addonsTotal = $booking->items()->where('item_type', 'addon')->sum('unit_price');
+        $newTotal = $basePrice + $addonsTotal;
+        $booking->update(['total_price' => $newTotal, 'final_price' => $newTotal]);
+        $item = \App\Models\Service\ServiceItem::find($itemId);
+        return response()->json([
+            'success' => true,
+            'total_price' => $newTotal,
+            'item' => $item ? ['id' => $item->id, 'name' => $item->name, 'price' => $item->addon_price] : null,
+        ]);
     }
 
     public function updateFinalVideo(Request $request, Booking $booking)
